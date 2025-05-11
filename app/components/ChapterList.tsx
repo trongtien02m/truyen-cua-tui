@@ -1,0 +1,98 @@
+import React, { useEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+} from "react-native";
+import { Chapter } from "../types/Chapter";
+
+interface ChapterListProps {
+  bookId: number;
+  onChapterSelect: (chapter: Chapter) => void;
+}
+
+const ChapterList: React.FC<ChapterListProps> = ({
+  bookId,
+  onChapterSelect,
+}) => {
+  const [chapters, setChapters] = React.useState<Chapter[]>([]);
+
+  const fetchChapters = async () => {
+    try {
+      const url = `https://backend.metruyencv.com/api/chapters?filter[book_id]=${bookId}&filter[type]=published`;
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error("Không thể lấy danh sách chương.");
+      }
+
+      const data = await response.json();
+      setChapters(data.data || []); // Giả sử API trả về danh sách chương trong `data`
+    } catch (err) {
+      console.error("Lỗi khi lấy danh sách chương:", err);
+    } finally {
+    }
+  };
+
+  useEffect(() => {
+    fetchChapters();
+  }, []);
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.header}>Danh sách chương</Text>
+      <FlatList
+        data={chapters}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            style={styles.chapterItem}
+            onPress={() => onChapterSelect(item)}
+          >
+            <Text style={styles.chapterTitle}>{item.name}</Text>
+            <Text style={styles.chapterDate}>
+              {new Date(item.published_at).toLocaleDateString("vi-VN", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+              })}
+            </Text>
+          </TouchableOpacity>
+        )}
+      />
+    </View>
+  );
+};
+
+export default ChapterList;
+
+const styles = StyleSheet.create({
+  container: {
+    marginTop: 20,
+    paddingHorizontal: 20,
+  },
+  header: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  chapterItem: {
+    padding: 15,
+    backgroundColor: "#f9f9f9",
+    borderRadius: 10,
+    marginBottom: 10,
+    elevation: 2,
+  },
+  chapterTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  chapterDate: {
+    fontSize: 14,
+    color: "#666",
+    marginTop: 5,
+  },
+});
