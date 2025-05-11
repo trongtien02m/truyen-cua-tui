@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,12 +7,12 @@ import {
   FlatList,
   TouchableOpacity,
 } from "react-native";
+import useAppStore from "../store/store";
 import { Book } from "../types/Book";
 import { Ionicons } from "@expo/vector-icons";
 import ChapterList from "../components/ChapterList";
 import Audio from "./Audio";
 import { Chapter } from "../types/Chapter";
-import { ChapterData } from "../types/ChapterData";
 
 interface BookDetailProps {
   book: Book;
@@ -20,68 +20,69 @@ interface BookDetailProps {
 }
 
 const BookDetail: React.FC<BookDetailProps> = ({ book, onBack }) => {
-  const [chapterData, setChapterData] = useState<ChapterData | null>(null); // Dữ liệu chương
+  const currentBook = useAppStore((state) => state.currentBook);
+  const chapters = useAppStore((state) => state.chapters) || [];
+  const currentChapter = useAppStore((state) => state.currentChapter);
+  const setCurrentChapter = useAppStore((state) => state.setCurrentChapter);
 
   const onChapterSelect = (chapter: Chapter) => {
-    const chapterData = {
-      chapter,
-      book,
-      chapterCount: book.chapter_count, // Số chương của sách
-    }; // Tạo dữ liệu chương với thông tin sách
-
-    setChapterData(chapterData); // Chọn chương và hiển thị trang Audio
+    setCurrentChapter(chapter);
   };
-
-  if (chapterData) {
-    return (
-      <Audio
-        chapterData={chapterData}
-        onBack={() => setChapterData(null)} // Quay lại trang BookDetail
-      />
-    );
-  }
 
   const renderHeader = () => (
     <View>
-      {/* Nút quay lại */}
-      <View style={styles.imageContainer}>
-        <Image
-          source={{ uri: book.poster.default }}
-          style={styles.coverImage}
-        />
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
-      </View>
+      {currentBook && (
+        <>
+          <View style={styles.imageContainer}>
+            <Image
+              source={{ uri: currentBook.poster.default }}
+              style={styles.coverImage}
+            />
+            <TouchableOpacity onPress={onBack} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={24} color="#fff" />
+            </TouchableOpacity>
+          </View>
 
-      {/* Nội dung chi tiết */}
-      <Text style={styles.title}>{book.name}</Text>
-      <Text style={styles.author}>
-        Tác giả: {book.author?.name || "Không rõ"}
-      </Text>
-      <TouchableOpacity style={styles.readButton}>
-        <Text style={styles.readButtonText}>Đọc Truyện</Text>
-      </TouchableOpacity>
-      <View style={styles.statsContainer}>
-        <Text style={styles.statItem}>{book.chapter_count} chương</Text>
-        <Text style={styles.statItem}>{book.view_count} lượt đọc</Text>
-        <Text style={styles.statItem}>{book.vote_count} đề cử</Text>
-      </View>
+          {/* Nội dung chi tiết */}
+          <Text style={styles.title}>{currentBook.name}</Text>
+          <Text style={styles.author}>
+            Tác giả: {currentBook.author?.name || "Không rõ"}
+          </Text>
+          <TouchableOpacity style={styles.readButton}>
+            <Text style={styles.readButtonText}>Đọc Truyện</Text>
+          </TouchableOpacity>
+          <View style={styles.statsContainer}>
+            <Text style={styles.statItem}>
+              {currentBook.chapter_count} chương
+            </Text>
+            <Text style={styles.statItem}>
+              {currentBook.view_count} lượt đọc
+            </Text>
+            <Text style={styles.statItem}>{currentBook.vote_count} đề cử</Text>
+          </View>
+        </>
+      )}
     </View>
   );
 
   return (
-    <FlatList
-      ListHeaderComponent={renderHeader} // Hiển thị nội dung chi tiết ở đầu danh sách
-      data={[]} // Không có dữ liệu chính trong FlatList, chỉ sử dụng để hiển thị danh sách chương
-      renderItem={null} // Không cần render item chính
-      ListFooterComponent={
-        <ChapterList
-          bookId={book.id}
-          onChapterSelect={(chapter) => onChapterSelect(chapter)} // Khi chọn chương, gọi hàm onChapterSelect
+    <View style={styles.container}>
+      {currentBook !== null && currentChapter !== null ? (
+        <Audio />
+      ) : (
+        <FlatList
+          ListHeaderComponent={renderHeader}
+          data={[]}
+          renderItem={null}
+          ListFooterComponent={
+            <ChapterList
+              chapters={chapters}
+              onChapterSelect={(chapter) => onChapterSelect(chapter)}
+            />
+          }
         />
-      } // Hiển thị danh sách chương ở cuối
-    />
+      )}
+    </View>
   );
 };
 

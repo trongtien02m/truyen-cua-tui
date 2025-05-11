@@ -16,4 +16,5 @@ export interface Chapter {
   next: {
     index: number;
   };
+  sentences: string[];
 }

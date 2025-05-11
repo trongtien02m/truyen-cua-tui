@@ -9,6 +9,7 @@ import {
   Image,
   ActivityIndicator,
 } from "react-native";
+import useAppStore from "../store/store";
 import { Book } from "../types/Book"; // Import interface từ thư mục types
 import Pagination from "../components/Pagination"; // Import Pagination component
 import BookDetail from "./BookDetail"; // Import trang chi tiết truyện
@@ -21,7 +22,9 @@ const Explore = () => {
   const [debouncedQuery, setDebouncedQuery] = useState(""); // Giá trị debounce
   const [loading, setLoading] = useState(false); // Trạng thái loading
   const [error, setError] = useState<string | null>(null); // Trạng thái lỗi
-  const [selectedBook, setSelectedBook] = useState<Book | null>(null); // Truyện được chọn
+
+  const currentBook = useAppStore((state) => state.currentBook);
+  const setCurrentBook = useAppStore((state) => state.setCurrentBook);
 
   // Xử lý debounce
   useEffect(() => {
@@ -64,11 +67,11 @@ const Explore = () => {
   }, [debouncedQuery, page]);
 
   // Nếu có truyện được chọn, hiển thị trang chi tiết
-  if (selectedBook) {
+  if (currentBook) {
     return (
       <BookDetail
-        book={selectedBook}
-        onBack={() => setSelectedBook(null)} // Quay lại danh sách
+        book={currentBook}
+        onBack={() => setCurrentBook(null)} // Quay lại danh sách
       />
     );
   }
@@ -88,7 +91,7 @@ const Explore = () => {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.resultItem}
-            onPress={() => setSelectedBook(item)} // Chọn truyện
+            onPress={() => setCurrentBook(item)} // Chọn truyện
           >
             <Image
               source={{ uri: item.poster.default }}

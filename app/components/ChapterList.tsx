@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from "react";
+import React, { useCallback } from "react";
 import {
   View,
   Text,
@@ -9,36 +9,14 @@ import {
 import { Chapter } from "../types/Chapter";
 
 interface ChapterListProps {
-  bookId: number;
+  chapters: Chapter[];
   onChapterSelect: (chapter: Chapter) => void;
 }
 
 const ChapterList: React.FC<ChapterListProps> = ({
-  bookId,
+  chapters,
   onChapterSelect,
 }) => {
-  const [chapters, setChapters] = React.useState<Chapter[]>([]);
-
-  const fetchChapters = async () => {
-    try {
-      const url = `https://backend.metruyencv.com/api/chapters?filter[book_id]=${bookId}&filter[type]=published`;
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        throw new Error("Không thể lấy danh sách chương.");
-      }
-
-      const data = await response.json();
-      setChapters(data.data || []); // Giả sử API trả về danh sách chương trong `data`
-    } catch (err) {
-      console.error("Lỗi khi lấy danh sách chương:", err);
-    }
-  };
-
-  useEffect(() => {
-    fetchChapters();
-  }, []);
-
   // Tối ưu hóa renderItem bằng cách sử dụng React.memo
   const renderItem = useCallback(
     ({ item }: { item: Chapter }) => (
