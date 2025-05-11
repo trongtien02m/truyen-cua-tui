@@ -113,7 +113,7 @@ const Explore = () => {
           </TouchableOpacity>
         )}
       />
-      {totalPages && (
+      {totalPages > 0 && (
         <Pagination
           currentPage={page}
           totalPages={totalPages}

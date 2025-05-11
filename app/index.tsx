@@ -39,10 +39,7 @@ const App = () => {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[
-            styles.tabItem,
-            activeTab === "Explore" && styles.activeTab,
-          ]}
+          style={[styles.tabItem, activeTab === "Explore" && styles.activeTab]}
           onPress={() => setActiveTab("Explore")}
         >
           <Text

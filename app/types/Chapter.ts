@@ -10,4 +10,10 @@ export interface Chapter {
   unlock_key_price: number;
   is_locked: boolean | null;
   object_type: string;
+  previous: {
+    index: number;
+  };
+  next: {
+    index: number;
+  };
 }

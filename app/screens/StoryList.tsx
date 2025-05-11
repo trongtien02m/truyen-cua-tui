@@ -56,7 +56,7 @@ const StoryList = () => {
           />
         </>
       ) : (
-        <Audio onBack={handleBackToList} />
+        <Audio bookSlug="" chapter={1} onBack={handleBackToList} />
       )}
     </View>
   );

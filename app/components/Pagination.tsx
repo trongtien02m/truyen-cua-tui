@@ -5,14 +5,6 @@ const Pagination = ({ currentPage, totalPages, onPageChange }: any) => {
   return (
     <View style={styles.paginationContainer}>
       <TouchableOpacity
-        onPress={() => onPageChange(1)}
-        disabled={currentPage === 1}
-      >
-        <Text style={[styles.pageButton, currentPage === 1 && styles.disabled]}>
-          {"|<<"}
-        </Text>
-      </TouchableOpacity>
-      <TouchableOpacity
         onPress={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
       >

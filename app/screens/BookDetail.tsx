@@ -1,16 +1,18 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   Image,
-  ScrollView,
+  FlatList,
   TouchableOpacity,
 } from "react-native";
-import { Book } from "../types/Book"; // Import interface từ thư mục types
-import { Ionicons } from "@expo/vector-icons"; // Sử dụng icon từ thư viện expo/vector-icons
-import ChapterList from "../components/ChapterList"; // Import ChapterList
+import { Book } from "../types/Book";
+import { Ionicons } from "@expo/vector-icons";
+import ChapterList from "../components/ChapterList";
+import Audio from "./Audio";
 import { Chapter } from "../types/Chapter";
+import { ChapterData } from "../types/ChapterData";
 
 interface BookDetailProps {
   book: Book;
@@ -18,13 +20,29 @@ interface BookDetailProps {
 }
 
 const BookDetail: React.FC<BookDetailProps> = ({ book, onBack }) => {
-  const handleChapterPress = (chapter: Chapter) => {
-    console.log("Chọn chương:", chapter.name);
-    // Thực hiện hành động khi chọn chương (ví dụ: điều hướng đến nội dung chương)
+  const [chapterData, setChapterData] = useState<ChapterData | null>(null); // Dữ liệu chương
+
+  const onChapterSelect = (chapter: Chapter) => {
+    const chapterData = {
+      chapter,
+      book,
+      chapterCount: book.chapter_count, // Số chương của sách
+    }; // Tạo dữ liệu chương với thông tin sách
+
+    setChapterData(chapterData); // Chọn chương và hiển thị trang Audio
   };
 
-  return (
-    <ScrollView style={styles.container}>
+  if (chapterData) {
+    return (
+      <Audio
+        chapterData={chapterData}
+        onBack={() => setChapterData(null)} // Quay lại trang BookDetail
+      />
+    );
+  }
+
+  const renderHeader = () => (
+    <View>
       {/* Nút quay lại */}
       <View style={styles.imageContainer}>
         <Image
@@ -49,10 +67,21 @@ const BookDetail: React.FC<BookDetailProps> = ({ book, onBack }) => {
         <Text style={styles.statItem}>{book.view_count} lượt đọc</Text>
         <Text style={styles.statItem}>{book.vote_count} đề cử</Text>
       </View>
+    </View>
+  );
 
-      {/* Danh sách chương */}
-      <ChapterList bookId={book.id} onChapterSelect={handleChapterPress} />
-    </ScrollView>
+  return (
+    <FlatList
+      ListHeaderComponent={renderHeader} // Hiển thị nội dung chi tiết ở đầu danh sách
+      data={[]} // Không có dữ liệu chính trong FlatList, chỉ sử dụng để hiển thị danh sách chương
+      renderItem={null} // Không cần render item chính
+      ListFooterComponent={
+        <ChapterList
+          bookId={book.id}
+          onChapterSelect={(chapter) => onChapterSelect(chapter)} // Khi chọn chương, gọi hàm onChapterSelect
+        />
+      } // Hiển thị danh sách chương ở cuối
+    />
   );
 };
 
@@ -64,21 +93,21 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   imageContainer: {
-    position: "relative", // Để nút quay lại nằm đè lên hình ảnh
+    position: "relative",
   },
   coverImage: {
     width: "100%",
-    height: 300, // Hiển thị hình ảnh dọc đầy đủ
-    resizeMode: "cover", // Đảm bảo hình ảnh được hiển thị đầy đủ
+    height: 300,
+    resizeMode: "cover",
   },
   backButton: {
-    position: "absolute", // Nút quay lại nằm đè lên hình ảnh
-    top: 20, // Cách mép trên 20px
-    left: 20, // Cách mép trái 20px
+    position: "absolute",
+    top: 20,
+    left: 20,
     width: 40,
     height: 40,
-    borderRadius: 20, // Button tròn
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // Nền mờ
+    borderRadius: 20,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -115,33 +144,5 @@ const styles = StyleSheet.create({
   statItem: {
     fontSize: 14,
     color: "#666",
-  },
-  tagsContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    marginBottom: 20,
-    marginHorizontal: 20,
-  },
-  tag: {
-    backgroundColor: "#E0E0E0",
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 5,
-    marginRight: 10,
-    marginBottom: 10,
-    fontSize: 14,
-    color: "#333",
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 10,
-    marginHorizontal: 20,
-  },
-  description: {
-    fontSize: 14,
-    color: "#666",
-    lineHeight: 20,
-    marginHorizontal: 20,
   },
 });
