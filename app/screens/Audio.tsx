@@ -28,13 +28,14 @@ const Audio = () => {
   const chapters = useAppStore((state) => state.chapters);
   const sentences = useAppStore((state) => state.sentences);
   const setCurrentChapter = useAppStore((state) => state.setCurrentChapter);
+
   useEffect(() => {
     const restoreState = async () => {
       // const savedChapter = await loadState("currentChapter");
       // const savedSentenceIndex = await loadState("currentSentenceIndex");
-      const savedVoice = await loadState("voice") || 'vi-vn-x-vic-local';
-      const savedPitch = await loadState("pitch") || 1;
-      const savedRate = await loadState("rate") || 1.8;
+      const savedVoice = (await loadState("voice")) || "vi-vn-x-vic-local";
+      const savedPitch = (await loadState("pitch")) || 1;
+      const savedRate = (await loadState("rate")) || 1.8;
 
       // setCurrentChapter(savedChapter);
       // setCurrentSentenceIndex(savedSentenceIndex);
@@ -87,11 +88,11 @@ const Audio = () => {
   };
 
   useEffect(() => {
-    if (sentences.length > 0) {
+    if (sentences.length > 0 && isInitialized) {
       stop();
       speak(0);
     }
-  }, [sentences]);
+  }, [sentences, isInitialized]);
 
   useEffect(() => {
     const progress = (currentSentenceIndex / sentences.length) * 100;
@@ -126,7 +127,7 @@ const Audio = () => {
     setCurrentChapter(chapters[currentChapter.index - 2]);
   };
 
-  if (!isInitialized) {
+  if (!isInitialized || !currentChapter || !sentences.length) {
     return (
       <View style={styles.loadingContainer}>
         <Text style={styles.loadingText}>Đang tải...</Text>
@@ -136,129 +137,114 @@ const Audio = () => {
 
   return (
     <View style={styles.container}>
-      {currentChapter && (
-        <>
-          <View style={styles.header}>
-            <TouchableOpacity
-              onPress={() => backToList()}
-              style={styles.navButton}
-            >
-              <Icon name="arrow-back" size={24} color="#000" />
-            </TouchableOpacity>
-            <Text style={styles.title}>{currentBook?.name}</Text>
-            <View style={styles.navIcons}>
-              <TouchableOpacity onPress={openModal} style={styles.navIcon}>
-                <Icon name="settings" size={24} color="#000" />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={openModal} style={styles.navIcon}>
-                <Icon name="help-outline" size={24} color="#000" />
-              </TouchableOpacity>
-              <VoiceSettings
-                visible={isModalVisible}
-                onClose={closeModal}
-                pitch={pitch}
-                rate={rate}
-                onPitchChange={(value) => setPitch(value)}
-                onRateChange={(value) => setRate(value)}
-                voice={voice}
-                onVoiceChange={(value) => setVoice(value)}
-              />
-            </View>
-          </View>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => backToList()} style={styles.navButton}>
+          <Icon name="arrow-back" size={24} color="#000" />
+        </TouchableOpacity>
+        <Text style={styles.title}>{currentBook?.name}</Text>
+        <View style={styles.navIcons}>
+          <TouchableOpacity onPress={openModal} style={styles.navIcon}>
+            <Icon name="settings" size={24} color="#000" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={openModal} style={styles.navIcon}>
+            <Icon name="help-outline" size={24} color="#000" />
+          </TouchableOpacity>
+          <VoiceSettings
+            visible={isModalVisible}
+            onClose={closeModal}
+            pitch={pitch}
+            rate={rate}
+            onPitchChange={(value) => setPitch(value)}
+            onRateChange={(value) => setRate(value)}
+            voice={voice}
+            onVoiceChange={(value) => setVoice(value)}
+          />
+        </View>
+      </View>
 
-          {/* Hình ảnh bìa và tiêu đề chương */}
-          <View style={styles.chapterInfo}>
-            {/* <Image
+      {/* Hình ảnh bìa và tiêu đề chương */}
+      <View style={styles.chapterInfo}>
+        {/* <Image
               source={{
                 uri: "https://example.com/cover.jpg", // Thay bằng URL hình ảnh bìa
               }}
               style={styles.coverImage}
             /> */}
-            <Text style={styles.chapterTitle}>{currentChapter?.name}</Text>
-          </View>
+        <Text style={styles.chapterTitle}>{currentChapter?.name}</Text>
+      </View>
 
-          {/* Nội dung chương */}
-          <ScrollView style={styles.storyBox}>
-            <Text style={styles.storyText}>
-              {sentences[currentSentenceIndex]}
-            </Text>
-          </ScrollView>
+      {/* Nội dung chương */}
+      <ScrollView style={styles.storyBox}>
+        <Text style={styles.storyText}>{sentences[currentSentenceIndex]}</Text>
+      </ScrollView>
 
-          {/* Thanh tiến độ */}
-          <Text style={styles.label}>
-            Tiến độ: {Math.round(currentPosition)}%
-          </Text>
-          <Slider
-            style={styles.slider}
-            minimumValue={0}
-            maximumValue={100}
-            step={(1 / sentences.length) * 100}
-            value={currentPosition}
-            onSlidingComplete={(value) => {
-              const sentenceIndex = Math.floor(
-                (value / 100) * sentences.length
-              );
-              setCurrentSentenceIndex(sentenceIndex);
-              if (isSpeaking) {
-                Speech.stop();
-                speak(sentenceIndex);
-              }
-            }}
+      {/* Thanh tiến độ */}
+      <Text style={styles.label}>Tiến độ: {Math.round(currentPosition)}%</Text>
+      <Slider
+        style={styles.slider}
+        minimumValue={0}
+        maximumValue={100}
+        step={(1 / sentences.length) * 100}
+        value={currentPosition}
+        onSlidingComplete={(value) => {
+          const sentenceIndex = Math.floor((value / 100) * sentences.length);
+          setCurrentSentenceIndex(sentenceIndex);
+          if (isSpeaking) {
+            Speech.stop();
+            speak(sentenceIndex);
+          }
+        }}
+      />
+      {/* Nút điều khiển */}
+      <View style={styles.buttonRow}>
+        <TouchableOpacity
+          onPress={onPreviousChapter}
+          style={[
+            styles.iconButton,
+            // chapterIndex === 1 && styles.disabledButton,
+          ]}
+          // disabled={chapterData.chapter.previous?.index === undefined}
+        >
+          <Icon
+            name="skip-previous"
+            size={40}
+            // color={
+            //   chapterData.chapter.previous?.index === undefined
+            //     ? "#ccc"
+            //     : "#000"
+            // }
           />
-          {/* Nút điều khiển */}
-          <View style={styles.buttonRow}>
-            <TouchableOpacity
-              onPress={onPreviousChapter}
-              style={[
-                styles.iconButton,
-                // chapterIndex === 1 && styles.disabledButton,
-              ]}
-              // disabled={chapterData.chapter.previous?.index === undefined}
-            >
-              <Icon
-                name="skip-previous"
-                size={40}
-                // color={
-                //   chapterData.chapter.previous?.index === undefined
-                //     ? "#ccc"
-                //     : "#000"
-                // }
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() =>
-                isSpeaking ? stop() : speak(currentSentenceIndex)
-              }
-              style={styles.iconButton}
-            >
-              <Icon
-                name={isSpeaking ? "pause" : "play-arrow"}
-                size={40}
-                color="#000"
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={onNextChapter}
-              style={[
-                styles.iconButton,
-                // chapterData.chapter.index === chapterData.chapterCount &&
-                //   styles.disabledButton,
-              ]}
-              // disabled={chapterData.chapter.index === chapterData.chapterCount}
-            >
-              <Icon
-                name="skip-next"
-                size={40}
-                // color={
-                //   chapterData.chapter.index === chapterData.chapterCount
-                //     ? "#ccc"
-                //     : "#000"
-                // }
-              />
-            </TouchableOpacity>
-          </View>
-        </>
-      )}
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => (isSpeaking ? stop() : speak(currentSentenceIndex))}
+          style={styles.iconButton}
+        >
+          <Icon
+            name={isSpeaking ? "pause" : "play-arrow"}
+            size={40}
+            color="#000"
+          />
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={onNextChapter}
+          style={[
+            styles.iconButton,
+            // chapterData.chapter.index === chapterData.chapterCount &&
+            //   styles.disabledButton,
+          ]}
+          // disabled={chapterData.chapter.index === chapterData.chapterCount}
+        >
+          <Icon
+            name="skip-next"
+            size={40}
+            // color={
+            //   chapterData.chapter.index === chapterData.chapterCount
+            //     ? "#ccc"
+            //     : "#000"
+            // }
+          />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };

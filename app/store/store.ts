@@ -82,7 +82,13 @@ const useAppStore = create<AppState>((set, get) => ({
         encryptContent = encryptContent.replace(/\\\\/g, "\\");
 
         let content = decryptContent(encryptContent);
-        content = content.map((item: string) => item.replace(/"/g, ""));
+        content = content.map((item: string) =>
+          item
+            .replace(/"/g, "")
+            .replace("·", "")
+            .replace(/(\d\.)\s(\d)/g, "$1$2")
+        );
+        console.log("🚀 ~ fetchChapterContent: ~ content:", content);
 
         set({ sentences: content });
         return content;

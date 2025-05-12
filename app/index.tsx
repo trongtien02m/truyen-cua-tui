@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import StoryList from "./screens/StoryList";
 import Explore from "./screens/Explore"; // Component mới cho tab "Khám phá"
+// import * as Speech from "expo-speech";
 
 const App = () => {
   const [activeTab, setActiveTab] = useState("MyStories"); // Quản lý tab hiện tại
@@ -14,6 +15,35 @@ const App = () => {
     }
     return null;
   };
+
+  // const speak = (sentence: string) => {
+  //   Speech.speak(sentence, {
+  //     language: "vi-VN",
+  //     voice: "vi-vn-x-vic-local",
+  //     pitch: 1.1,
+  //     rate: 2,
+  //   });
+  // };
+
+  // const read = () => {
+  //   console.log("read");
+  //   const sentences = [
+  //     "3 vạn * 2000= 100. 000. 000 ức quá hạ tiền!",
+  //   ];
+
+  //   for (const sentence of sentences) {
+  //     const refineText = sentence
+  //     .replace("·", "")
+  //     .replace(/(\d\.)\s(\d)/g, "$1$2");
+  //     console.log("🚀 ~ read ~ refineText:", refineText)
+
+  //     speak(refineText);
+  //   }
+  // };
+
+  // setTimeout(() => {
+  //   read();
+  // }, 1000);
 
   return (
     <View style={styles.container}>

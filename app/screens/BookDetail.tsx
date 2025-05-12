@@ -23,6 +23,7 @@ const BookDetail: React.FC<BookDetailProps> = ({ book, onBack }) => {
   const currentBook = useAppStore((state) => state.currentBook);
   const chapters = useAppStore((state) => state.chapters) || [];
   const currentChapter = useAppStore((state) => state.currentChapter);
+  const sentences = useAppStore((state) => state.sentences);
   const setCurrentChapter = useAppStore((state) => state.setCurrentChapter);
 
   const onChapterSelect = (chapter: Chapter) => {
@@ -67,7 +68,7 @@ const BookDetail: React.FC<BookDetailProps> = ({ book, onBack }) => {
 
   return (
     <View style={styles.container}>
-      {currentBook !== null && currentChapter !== null ? (
+      {currentBook !== null && currentChapter !== null && sentences.length ? (
         <Audio />
       ) : (
         <FlatList
