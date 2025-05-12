@@ -1,12 +1,10 @@
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
-  Alert,
   TouchableOpacity,
-  Image,
 } from "react-native";
 import Slider from "@react-native-community/slider";
 import * as Speech from "expo-speech";
@@ -34,9 +32,9 @@ const Audio = () => {
     const restoreState = async () => {
       // const savedChapter = await loadState("currentChapter");
       // const savedSentenceIndex = await loadState("currentSentenceIndex");
-      const savedVoice = await loadState("voice");
-      const savedPitch = await loadState("pitch");
-      const savedRate = await loadState("rate");
+      const savedVoice = await loadState("voice") || 'vi-vn-x-vic-local';
+      const savedPitch = await loadState("pitch") || 1;
+      const savedRate = await loadState("rate") || 1.8;
 
       // setCurrentChapter(savedChapter);
       // setCurrentSentenceIndex(savedSentenceIndex);
@@ -109,7 +107,7 @@ const Audio = () => {
   const closeModal = () => setIsModalVisible(false);
   const backToList = () => {
     stop();
-    // onBack();
+    setCurrentChapter(null);
   };
 
   const onNextChapter = () => {
@@ -170,12 +168,12 @@ const Audio = () => {
 
           {/* Hình ảnh bìa và tiêu đề chương */}
           <View style={styles.chapterInfo}>
-            <Image
+            {/* <Image
               source={{
                 uri: "https://example.com/cover.jpg", // Thay bằng URL hình ảnh bìa
               }}
               style={styles.coverImage}
-            />
+            /> */}
             <Text style={styles.chapterTitle}>{currentChapter?.name}</Text>
           </View>
 

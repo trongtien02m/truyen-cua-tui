@@ -8,7 +8,7 @@ interface AppState {
   setCurrentBook: (book: Book | null) => void;
   chapters: Chapter[] | null; // Danh sách chương
   currentChapter: Chapter | null; // Chương hiện tại
-  setCurrentChapter: (chapter: Chapter) => void;
+  setCurrentChapter: (chapter: Chapter | null) => void;
   sentences: string[]; // Nội dung chương
   fetchChapters: () => Promise<void>;
   fetchChapterContent: () => Promise<void>;
