@@ -1,4 +1,5 @@
 import Slider from '@react-native-community/slider';
+import * as Speech from 'expo-speech';
 import React, { useEffect, useState } from 'react';
 import {
   ScrollView,
@@ -7,18 +8,12 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import BackgroundService from 'react-native-background-actions';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { get } from '../../src/helpers/mmkvStoreUtils';
 import { loadState, saveState } from '../../src/helpers/storageUtils';
-import { speak, stop } from '../../src/service/audio';
-import { StoreValueType } from '../../src/types/StoreValueType';
 import VoiceSettings from '../components/VoiceSettings';
-import ChapterEvent from '../events/ChapterEvent';
 import useAppStore from '../store/store';
 
 const Audio = () => {
-  const [registeredTask, setRegisteredTask] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(true);
   const [currentPosition, setCurrentPosition] = useState(0);
   const [currentSentenceIndex, setCurrentSentenceIndex] = useState(0);
@@ -33,53 +28,6 @@ const Audio = () => {
   const chapters = useAppStore((state) => state.chapters);
   const sentences = useAppStore((state) => state.sentences);
   const setCurrentChapter = useAppStore((state) => state.setCurrentChapter);
-
-  const sleep = (time: number) =>
-    new Promise((resolve) => setTimeout(resolve, time));
-
-  const speakTask = async () => {
-    console.log('📡 Listening for chapterChanged events...');
-
-    const chapter = get('currentChapter', StoreValueType.Number);
-    const sentences = Array.from(
-      { length: 5 },
-      (_, i) => `Chapter ${chapter} - Câu ${i + 1}`,
-    );
-    speak(sentences, 0);
-
-    const handler = async (newChapter: number) => {
-      console.log('📘 New chapter triggered:', newChapter);
-
-      const sentences = Array.from(
-        { length: 5 },
-        (_, i) => `Chapter ${newChapter} - Câu ${i + 1}`,
-      );
-
-      speak(sentences, 0);
-    };
-
-    ChapterEvent.on('chapterChanged', handler);
-
-    while (BackgroundService.isRunning()) {
-      await sleep(10000); // Không làm gì cả, chỉ để duy trì
-    }
-
-    ChapterEvent.off('chapterChanged', handler);
-  };
-
-  const startBackgroundService = async () => {
-    await BackgroundService.start(speakTask, {
-      taskName: 'TimeLogger',
-      taskTitle: 'Time Logger Running',
-      taskDesc: 'Logging time every second...',
-      taskIcon: {
-        name: 'ic_launcher',
-        type: 'mipmap',
-      },
-      color: '#ff00ff',
-      linkingURI: 'yourapp://home',
-    });
-  };
 
   useEffect(() => {
     const restoreState = async () => {
@@ -98,12 +46,6 @@ const Audio = () => {
       setIsInitialized(true);
     };
 
-    console.log('registeredTask', registeredTask);
-
-    if (!registeredTask) {
-      startBackgroundService();
-      setRegisteredTask(true);
-    }
     restoreState();
   }, []);
 
@@ -125,24 +67,44 @@ const Audio = () => {
     }
   }, [rate, isInitialized]);
 
-  // useEffect(() => {
-  //   if (sentences.length > 0 && isInitialized) {
-  //     stop();
-  //     speakHandler();
-  //   }
-  // }, [sentences, isInitialized]);
+  const speak = (sentenceIndex: number) => {
+    if (sentenceIndex < sentences.length) {
+      setCurrentSentenceIndex(sentenceIndex);
+      const sentenceToSpeak = sentences[sentenceIndex];
+      Speech.speak(sentenceToSpeak, {
+        language: 'vi-VN',
+        voice: voice,
+        pitch: pitch,
+        rate: rate,
+        onStart: () => setIsSpeaking(true),
+        onDone: () => speak(sentenceIndex + 1),
+        onStopped: () => setIsSpeaking(false),
+      });
+    } else {
+      setCurrentPosition(100);
+      setIsSpeaking(false);
+      onNextChapter();
+    }
+  };
+
+  useEffect(() => {
+    if (sentences.length > 0 && isInitialized) {
+      stop();
+      speak(0);
+    }
+  }, [sentences, isInitialized]);
+
+  setInterval(() => {
+    console.log(currentChapter?.index);
+  }, 1000);
 
   useEffect(() => {
     const progress = (currentSentenceIndex / sentences.length) * 100;
     setCurrentPosition(progress);
   }, [currentSentenceIndex]);
 
-  const speakHandler = () => {
-    speak(sentences, 0);
-  };
-
-  const stopHandler = () => {
-    stop();
+  const stop = () => {
+    Speech.stop();
     setIsSpeaking(false);
   };
 
@@ -232,8 +194,8 @@ const Audio = () => {
           const sentenceIndex = Math.floor((value / 100) * sentences.length);
           setCurrentSentenceIndex(sentenceIndex);
           if (isSpeaking) {
-            stop();
-            speakHandler();
+            Speech.stop();
+            speak(sentenceIndex);
           }
         }}
       />
@@ -258,7 +220,7 @@ const Audio = () => {
           />
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => (isSpeaking ? stopHandler() : speakHandler())}
+          onPress={() => (isSpeaking ? stop() : speak(currentSentenceIndex))}
           style={styles.iconButton}
         >
           <Icon

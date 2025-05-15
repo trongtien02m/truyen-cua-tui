@@ -1,12 +1,12 @@
-import React, { useCallback } from "react";
+import React, { useCallback } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
   FlatList,
+  StyleSheet,
+  Text,
   TouchableOpacity,
-} from "react-native";
-import { Chapter } from "../types/Chapter";
+  View,
+} from 'react-native';
+import { Chapter } from '../../src/types/Chapter';
 
 interface ChapterListProps {
   chapters: Chapter[];
@@ -26,15 +26,15 @@ const ChapterList: React.FC<ChapterListProps> = ({
       >
         <Text style={styles.chapterTitle}>{item.name}</Text>
         <Text style={styles.chapterDate}>
-          {new Date(item.published_at).toLocaleDateString("vi-VN", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
+          {new Date(item.published_at).toLocaleDateString('vi-VN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
           })}
         </Text>
       </TouchableOpacity>
     ),
-    [onChapterSelect]
+    [onChapterSelect],
   );
 
   return (
@@ -61,24 +61,24 @@ const styles = StyleSheet.create({
   },
   header: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginBottom: 10,
   },
   chapterItem: {
     padding: 15,
-    backgroundColor: "#f9f9f9",
+    backgroundColor: '#f9f9f9',
     borderRadius: 10,
     marginBottom: 10,
     elevation: 2,
   },
   chapterTitle: {
     fontSize: 16,
-    fontWeight: "bold",
-    color: "#333",
+    fontWeight: 'bold',
+    color: '#333',
   },
   chapterDate: {
     fontSize: 14,
-    color: "#666",
+    color: '#666',
     marginTop: 5,
   },
 });

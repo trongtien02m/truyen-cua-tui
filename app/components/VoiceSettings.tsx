@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
-import * as Speech from "expo-speech";
-import { View, Text, TouchableOpacity, Modal, StyleSheet } from "react-native";
-import Slider from "@react-native-community/slider";
-import { Picker } from "@react-native-picker/picker";
+import React, { useEffect, useState } from 'react';
+import * as Speech from 'expo-speech';
+import { View, Text, TouchableOpacity, Modal, StyleSheet } from 'react-native';
+import Slider from '@react-native-community/slider';
+import { Picker } from '@react-native-picker/picker';
 
 interface SettingsModalProps {
   visible: boolean;
@@ -37,22 +37,22 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         while (voices.length === 0) {
           voices = await Speech.getAvailableVoicesAsync();
           if (voices.length === 0) {
-            console.log("TTS not ready. Waiting...");
+            console.log('TTS not ready. Waiting...');
             await new Promise((resolve) => setTimeout(resolve, 1000)); // Chờ 1 giây trước khi thử lại
           }
         }
 
         if (voices.length === 0) {
-          console.warn("No voices available after multiple attempts.");
+          console.warn('No voices available after multiple attempts.');
           return;
         }
 
         const vietnameseVoices = voices.filter((voice) =>
-          voice.language.startsWith("vi")
+          voice.language.startsWith('vi'),
         );
         setVoices(vietnameseVoices); // Lưu danh sách giọng đọc tiếng Việt
       } catch (error) {
-        console.error("Error fetching voices:", error);
+        console.error('Error fetching voices:', error);
       } finally {
         setIsFetchingVoices(false); // Kết thúc tải
       }
@@ -137,58 +137,58 @@ export default SettingsModal;
 const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
-    justifyContent: "flex-end",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     padding: 20,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginBottom: 20,
-    textAlign: "center",
+    textAlign: 'center',
   },
   modalLabel: {
     fontSize: 16,
     marginVertical: 10,
   },
   slider: {
-    width: "100%",
+    width: '100%',
     height: 40,
   },
   pickerContainer: {
     marginVertical: 10,
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: '#ccc',
     borderRadius: 5,
   },
   picker: {
     height: 50,
-    width: "100%",
+    width: '100%',
   },
   closeButton: {
     marginTop: 20,
-    backgroundColor: "#007BFF",
+    backgroundColor: '#007BFF',
     padding: 10,
     borderRadius: 10,
-    alignItems: "center",
+    alignItems: 'center',
   },
   closeButtonText: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   loadingText: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
 });

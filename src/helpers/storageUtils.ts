@@ -1,4 +1,4 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 /**
  * Lưu trạng thái vào AsyncStorage
@@ -9,7 +9,7 @@ export const saveState = async (key: string, value: any) => {
   try {
     await AsyncStorage.setItem(key, JSON.stringify(value));
   } catch (error) {
-    console.error("Error saving state:", error);
+    console.error('Error saving state:', error);
   }
 };
 
@@ -23,7 +23,7 @@ export const loadState = async (key: string) => {
     const value = await AsyncStorage.getItem(key);
     return value ? JSON.parse(value) : null;
   } catch (error) {
-    console.error("Error loading state:", error);
+    console.error('Error loading state:', error);
     return null;
   }
 };
@@ -32,8 +32,8 @@ export const checkStorage = async () => {
   try {
     const keys = await AsyncStorage.getAllKeys();
     const values = await AsyncStorage.multiGet(keys);
-    console.log("Stored keys and values:", values);
+    console.log('Stored keys and values:', values);
   } catch (error) {
-    console.error("Error checking AsyncStorage:", error);
+    console.error('Error checking AsyncStorage:', error);
   }
 };

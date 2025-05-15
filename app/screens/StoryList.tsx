@@ -1,29 +1,29 @@
-import React from "react";
+import React from 'react';
 import {
-  View,
-  Text,
   FlatList,
-  TouchableOpacity,
   StyleSheet,
-} from "react-native";
-import { Story } from "../types/Story"; // Import interface từ thư mục types
-import Audio from "./Audio";
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { Story } from '../../src/types/Story'; // Import interface từ thư mục types
+import Audio from './Audio';
 
 const stories = [
   {
     id: 1,
-    title: "Truyền Thuyết Về Tiên Nhân",
-    description: "Một câu chuyện về hành trình tìm kiếm vị tiên nhân.",
+    title: 'Truyền Thuyết Về Tiên Nhân',
+    description: 'Một câu chuyện về hành trình tìm kiếm vị tiên nhân.',
   },
   {
     id: 2,
-    title: "Bí Mật Của Linh Sơn",
-    description: "Khám phá bí mật ẩn giấu trong ngôi đền cổ.",
+    title: 'Bí Mật Của Linh Sơn',
+    description: 'Khám phá bí mật ẩn giấu trong ngôi đền cổ.',
   },
   {
     id: 3,
-    title: "Hành Trình Trở Thành Tiên Nhân",
-    description: "Hành trình đầy thử thách để trở thành một huyền thoại.",
+    title: 'Hành Trình Trở Thành Tiên Nhân',
+    description: 'Hành trình đầy thử thách để trở thành một huyền thoại.',
   },
 ];
 
@@ -68,28 +68,28 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
   },
   header: {
     fontSize: 24,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginBottom: 20,
-    textAlign: "center",
+    textAlign: 'center',
   },
   storyItem: {
     padding: 15,
     marginBottom: 10,
-    backgroundColor: "#f9f9f9",
+    backgroundColor: '#f9f9f9',
     borderRadius: 10,
     elevation: 2,
   },
   storyTitle: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   storyDescription: {
     fontSize: 14,
-    color: "#666",
+    color: '#666',
     marginTop: 5,
   },
 });

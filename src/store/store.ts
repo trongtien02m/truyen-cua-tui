@@ -1,7 +1,7 @@
-import { create } from "zustand";
-import { Book } from "../types/Book";
-import { Chapter } from "../types/Chapter";
-import decryptContent from "../helpers/decryptContent";
+import decryptContent from '@/helpers/decryptContent';
+import { Book } from '@/types/Book';
+import { Chapter } from '@/types/Chapter';
+import { create } from 'zustand';
 
 interface AppState {
   currentBook: Book | null; // Sách hiện tại
@@ -25,6 +25,7 @@ const useAppStore = create<AppState>((set, get) => ({
   },
   currentChapter: null, // Giá trị mặc định (-1 nghĩa là chưa chọn chương nào)
   setCurrentChapter: (chapter) => {
+    console.log('setCurrentChapter');
     set({ currentChapter: chapter });
 
     get().fetchChapterContent(); // Gọi fetchChapterContent khi currentChapter thay đổi
@@ -42,7 +43,7 @@ const useAppStore = create<AppState>((set, get) => ({
       const response = await fetch(url);
 
       if (!response.ok) {
-        throw new Error("Không thể lấy danh sách chương.");
+        throw new Error('Không thể lấy danh sách chương.');
       }
 
       const data = await response.json();
@@ -51,10 +52,11 @@ const useAppStore = create<AppState>((set, get) => ({
         chapters: data.data,
       });
     } catch (err) {
-      console.error("Lỗi khi lấy danh sách chương:", err);
+      console.error('Lỗi khi lấy danh sách chương:', err);
     }
   },
   fetchChapterContent: async () => {
+    console.log('fetch Chapter Content');
     const currentBook = get().currentBook;
     const currentChapter = get().currentChapter;
 
@@ -75,26 +77,26 @@ const useAppStore = create<AppState>((set, get) => ({
 
       if (match && match[1]) {
         let encryptContent = match[1];
-        encryptContent = encryptContent.replace(/\\\//g, "/");
-        encryptContent = encryptContent.replace(/\\n/g, "\n");
-        encryptContent = encryptContent.replace(/\\t/g, "\t");
+        encryptContent = encryptContent.replace(/\\\//g, '/');
+        encryptContent = encryptContent.replace(/\\n/g, '\n');
+        encryptContent = encryptContent.replace(/\\t/g, '\t');
         encryptContent = encryptContent.replace(/\\"/g, '"');
-        encryptContent = encryptContent.replace(/\\\\/g, "\\");
+        encryptContent = encryptContent.replace(/\\\\/g, '\\');
 
         let content = decryptContent(encryptContent);
         content = content.map((item: string) =>
           item
-            .replace(/"/g, "")
-            .replace("·", "")
-            .replace(/(\d\.)\s(\d)/g, "$1$2")
+            .replace(/"/g, '')
+            .replace('·', '')
+            .replace(/(\d\.)\s(\d)/g, '$1$2'),
         );
-        console.log("🚀 ~ fetchChapterContent: ~ content:", content);
+        console.log('🚀 ~ fetchChapterContent: ~ content:', content);
 
         set({ sentences: content });
         return content;
       }
     } catch (err) {
-      console.error("Error fetching chapter content:", err);
+      console.error('Error fetching chapter content:', err);
     }
   },
 }));

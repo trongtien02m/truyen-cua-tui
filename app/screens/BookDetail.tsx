@@ -1,18 +1,18 @@
-import React, { useEffect, useState } from "react";
+import { Ionicons } from '@expo/vector-icons';
+import React from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
   FlatList,
+  Image,
+  StyleSheet,
+  Text,
   TouchableOpacity,
-} from "react-native";
-import useAppStore from "../store/store";
-import { Book } from "../types/Book";
-import { Ionicons } from "@expo/vector-icons";
-import ChapterList from "../components/ChapterList";
-import Audio from "./Audio";
-import { Chapter } from "../types/Chapter";
+  View,
+} from 'react-native';
+import { Book } from '../../src/types/Book';
+import { Chapter } from '../../src/types/Chapter';
+import ChapterList from '../components/ChapterList';
+import useAppStore from '../store/store';
+import Audio from './Audio';
 
 interface BookDetailProps {
   book: Book;
@@ -47,7 +47,7 @@ const BookDetail: React.FC<BookDetailProps> = ({ book, onBack }) => {
           {/* Nội dung chi tiết */}
           <Text style={styles.title}>{currentBook.name}</Text>
           <Text style={styles.author}>
-            Tác giả: {currentBook.author?.name || "Không rõ"}
+            Tác giả: {currentBook.author?.name || 'Không rõ'}
           </Text>
           <TouchableOpacity style={styles.readButton}>
             <Text style={styles.readButtonText}>Đọc Truyện</Text>
@@ -92,59 +92,59 @@ export default BookDetail;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
   },
   imageContainer: {
-    position: "relative",
+    position: 'relative',
   },
   coverImage: {
-    width: "100%",
+    width: '100%',
     height: 300,
-    resizeMode: "cover",
+    resizeMode: 'cover',
   },
   backButton: {
-    position: "absolute",
+    position: 'absolute',
     top: 20,
     left: 20,
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   title: {
     fontSize: 24,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginVertical: 10,
-    textAlign: "center",
+    textAlign: 'center',
   },
   author: {
     fontSize: 16,
-    color: "#666",
-    textAlign: "center",
+    color: '#666',
+    textAlign: 'center',
     marginBottom: 20,
   },
   readButton: {
-    backgroundColor: "#D4AF37",
+    backgroundColor: '#D4AF37',
     paddingVertical: 10,
     borderRadius: 5,
-    alignItems: "center",
+    alignItems: 'center',
     marginBottom: 20,
     marginHorizontal: 20,
   },
   readButtonText: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   statsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
+    flexDirection: 'row',
+    justifyContent: 'space-around',
     marginBottom: 20,
   },
   statItem: {
     fontSize: 14,
-    color: "#666",
+    color: '#666',
   },
 });

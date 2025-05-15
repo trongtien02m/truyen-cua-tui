@@ -1,5 +1,5 @@
-import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 const Pagination = ({ currentPage, totalPages, onPageChange }: any) => {
   return (
@@ -9,7 +9,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }: any) => {
         disabled={currentPage === 1}
       >
         <Text style={[styles.pageButton, currentPage === 1 && styles.disabled]}>
-          {"<"}
+          {'<'}
         </Text>
       </TouchableOpacity>
       <Text style={styles.pageInfo}>
@@ -25,7 +25,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }: any) => {
             currentPage === totalPages && styles.disabled,
           ]}
         >
-          {">"}
+          {'>'}
         </Text>
       </TouchableOpacity>
       <TouchableOpacity
@@ -38,7 +38,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }: any) => {
             currentPage === totalPages && styles.disabled,
           ]}
         >
-          {">>|"}
+          {'>>|'}
         </Text>
       </TouchableOpacity>
     </View>
@@ -47,22 +47,22 @@ const Pagination = ({ currentPage, totalPages, onPageChange }: any) => {
 
 const styles = StyleSheet.create({
   paginationContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginTop: 20,
   },
   pageButton: {
     marginHorizontal: 10,
     fontSize: 16,
-    color: "#007BFF",
+    color: '#007BFF',
   },
   disabled: {
-    color: "#ccc",
+    color: '#ccc',
   },
   pageInfo: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
 });
 

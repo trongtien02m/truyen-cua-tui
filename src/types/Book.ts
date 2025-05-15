@@ -16,9 +16,9 @@ export interface Book {
   manager_pick: number;
   poster: {
     default: string;
-    "600": string;
-    "300": string;
-    "150": string;
+    '600': string;
+    '300': string;
+    '150': string;
   };
   synopsis: string;
   vote_count: number;

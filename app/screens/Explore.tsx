@@ -1,25 +1,25 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  FlatList,
-  TouchableOpacity,
-  Image,
   ActivityIndicator,
-} from "react-native";
-import useAppStore from "../store/store";
-import { Book } from "../types/Book"; // Import interface từ thư mục types
-import Pagination from "../components/Pagination"; // Import Pagination component
-import BookDetail from "./BookDetail"; // Import trang chi tiết truyện
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { Book } from '../../src/types/Book'; // Import interface từ thư mục types
+import Pagination from '../components/Pagination'; // Import Pagination component
+import useAppStore from '../store/store';
+import BookDetail from './BookDetail'; // Import trang chi tiết truyện
 
 const Explore = () => {
   const [page, setPage] = useState(1); // Trang hiện tại
   const [totalPages, setTotalPages] = useState(0); // Tổng số trang
-  const [searchQuery, setSearchQuery] = useState(""); // Từ khóa tìm kiếm
+  const [searchQuery, setSearchQuery] = useState(''); // Từ khóa tìm kiếm
   const [results, setResults] = useState<Book[]>([]); // Kết quả tìm kiếm
-  const [debouncedQuery, setDebouncedQuery] = useState(""); // Giá trị debounce
+  const [debouncedQuery, setDebouncedQuery] = useState(''); // Giá trị debounce
   const [loading, setLoading] = useState(false); // Trạng thái loading
   const [error, setError] = useState<string | null>(null); // Trạng thái lỗi
 
@@ -50,14 +50,14 @@ const Explore = () => {
 
       try {
         const url = `https://backend.metruyencv.com/api/books/search?keyword=${encodeURIComponent(
-          debouncedQuery
+          debouncedQuery,
         )}&page=${page}`;
         const response = await fetch(url);
         const data = await response.json();
         setResults(data.data || []);
         setTotalPages(data.pagination.last); // Cập nhật tổng số trang
       } catch {
-        setError("Có lỗi xảy ra khi tìm kiếm.");
+        setError('Có lỗi xảy ra khi tìm kiếm.');
       } finally {
         setLoading(false);
       }
@@ -107,7 +107,7 @@ const Explore = () => {
                 {item.synopsis}
               </Text>
               <Text style={styles.resultAuthor}>
-                Tác giả: {item.author?.name || "Không rõ"}
+                Tác giả: {item.author?.name || 'Không rõ'}
               </Text>
               <Text>
                 {item.chapter_count} chương - {item.view_count} lượt đọc
@@ -138,23 +138,23 @@ export default Explore;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     padding: 20,
   },
   searchInput: {
     height: 40,
-    borderColor: "#ccc",
+    borderColor: '#ccc',
     borderWidth: 1,
     borderRadius: 5,
     paddingHorizontal: 10,
     marginBottom: 20,
   },
   resultItem: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     padding: 15,
     marginBottom: 10,
-    backgroundColor: "#f9f9f9",
+    backgroundColor: '#f9f9f9',
     borderRadius: 10,
     elevation: 2,
   },
@@ -169,28 +169,28 @@ const styles = StyleSheet.create({
   },
   resultTitle: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginBottom: 5,
   },
   resultDescription: {
     fontSize: 14,
-    color: "#666",
+    color: '#666',
     marginBottom: 5,
   },
   resultAuthor: {
     fontSize: 14,
-    color: "#007BFF",
+    color: '#007BFF',
   },
   errorText: {
-    textAlign: "center",
-    color: "red",
+    textAlign: 'center',
+    color: 'red',
     marginTop: 20,
   },
   loadingOverlay: {
     ...StyleSheet.absoluteFillObject, // Lớp phủ toàn màn hình
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.8)", // Màu nền mờ
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)', // Màu nền mờ
     zIndex: 10, // Đảm bảo lớp phủ nằm trên cùng
   },
 });
