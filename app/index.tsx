@@ -1,7 +1,7 @@
+import Explore from '@app/screens/Explore'; // Component mới cho tab "Khám phá"
+import StoryList from '@app/screens/StoryList';
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import StoryList from './screens/StoryList';
-import Explore from './screens/Explore'; // Component mới cho tab "Khám phá"
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 // import * as Speech from "expo-speech";
 
 const App = () => {

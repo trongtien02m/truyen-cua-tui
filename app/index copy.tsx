@@ -1,10 +1,10 @@
+import ChapterEvent from '@/events/ChapterEvent';
+import { get, set } from '@/helpers/mmkvStoreUtils';
+import { speak, stop } from '@/service/audio';
+import { StoreValueType } from '@/types/StoreValueType';
 import React, { useEffect, useState } from 'react';
 import { AppState, Button, Text, View } from 'react-native';
 import BackgroundService from 'react-native-background-actions';
-import { get, set } from '../src/helpers/mmkvStoreUtils';
-import { speak, stop } from '../src/service/audio';
-import { StoreValueType } from '../src/types/StoreValueType';
-import ChapterEvent from './events/ChapterEvent';
 
 const sleep = (time: number) =>
   new Promise((resolve) => setTimeout(resolve, time));

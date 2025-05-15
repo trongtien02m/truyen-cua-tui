@@ -25,10 +25,7 @@ const useAppStore = create<AppState>((set, get) => ({
   },
   currentChapter: null, // Giá trị mặc định (-1 nghĩa là chưa chọn chương nào)
   setCurrentChapter: (chapter) => {
-    console.log('setCurrentChapter');
     set({ currentChapter: chapter });
-
-    get().fetchChapterContent(); // Gọi fetchChapterContent khi currentChapter thay đổi
   },
   chapters: null, // Giá trị mặc định
   sentences: [], // Giá trị mặc định
@@ -90,7 +87,6 @@ const useAppStore = create<AppState>((set, get) => ({
             .replace('·', '')
             .replace(/(\d\.)\s(\d)/g, '$1$2'),
         );
-        console.log('🚀 ~ fetchChapterContent: ~ content:', content);
 
         set({ sentences: content });
         return content;

@@ -1,3 +1,4 @@
+import { Story } from '@/types/Story'; // Import interface từ thư mục types
 import React from 'react';
 import {
   FlatList,
@@ -6,7 +7,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Story } from '../../src/types/Story'; // Import interface từ thư mục types
 import Audio from './Audio';
 
 const stories = [
@@ -56,7 +56,7 @@ const StoryList = () => {
           />
         </>
       ) : (
-        <Audio bookSlug="" chapter={1} onBack={handleBackToList} />
+        <Audio />
       )}
     </View>
   );

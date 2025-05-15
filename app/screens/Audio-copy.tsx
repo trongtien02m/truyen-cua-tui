@@ -1,3 +1,6 @@
+import { loadState, saveState } from '@/helpers/storageUtils';
+import useAppStore from '@/store/store';
+import VoiceSettings from '@app/components/VoiceSettings';
 import Slider from '@react-native-community/slider';
 import * as Speech from 'expo-speech';
 import React, { useEffect, useState } from 'react';
@@ -9,9 +12,6 @@ import {
   View,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { loadState, saveState } from '../../src/helpers/storageUtils';
-import VoiceSettings from '../components/VoiceSettings';
-import useAppStore from '../store/store';
 
 const Audio = () => {
   const [isSpeaking, setIsSpeaking] = useState(true);

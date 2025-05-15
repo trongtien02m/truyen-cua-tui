@@ -1,3 +1,8 @@
+import ChapterEvent from '@/events/ChapterEvent';
+import { loadState } from '@/helpers/storageUtils';
+import { speak, stop } from '@/service/audio';
+import { fetchChapterContent } from '@/service/book';
+import useAppStore from '@/store/store';
 import Slider from '@react-native-community/slider';
 import React, { useEffect, useState } from 'react';
 import {
@@ -9,13 +14,6 @@ import {
 } from 'react-native';
 import BackgroundService from 'react-native-background-actions';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { get } from '../../src/helpers/mmkvStoreUtils';
-import { loadState, saveState } from '../../src/helpers/storageUtils';
-import { speak, stop } from '../../src/service/audio';
-import { StoreValueType } from '../../src/types/StoreValueType';
-import VoiceSettings from '../components/VoiceSettings';
-import ChapterEvent from '../events/ChapterEvent';
-import useAppStore from '../store/store';
 
 const Audio = () => {
   const [registeredTask, setRegisteredTask] = useState(false);
@@ -37,34 +35,27 @@ const Audio = () => {
   const sleep = (time: number) =>
     new Promise((resolve) => setTimeout(resolve, time));
 
+  const handler = async (chapter: number) => {
+    console.log('handle chapter change');
+    if (!currentBook || !currentChapter) return;
+
+    const bookSlug = currentBook.slug;
+
+    const chapterContent = await fetchChapterContent(bookSlug, chapter);
+    console.log("🚀 ~ handler ~ chapterContent:", chapterContent[0])
+
+    stop();
+    speak(chapterContent, 0);
+  };
+
   const speakTask = async () => {
-    console.log('📡 Listening for chapterChanged events...');
-
-    const chapter = get('currentChapter', StoreValueType.Number);
-    const sentences = Array.from(
-      { length: 5 },
-      (_, i) => `Chapter ${chapter} - Câu ${i + 1}`,
-    );
-    speak(sentences, 0);
-
-    const handler = async (newChapter: number) => {
-      console.log('📘 New chapter triggered:', newChapter);
-
-      const sentences = Array.from(
-        { length: 5 },
-        (_, i) => `Chapter ${newChapter} - Câu ${i + 1}`,
-      );
-
-      speak(sentences, 0);
-    };
-
     ChapterEvent.on('chapterChanged', handler);
 
     while (BackgroundService.isRunning()) {
       await sleep(10000); // Không làm gì cả, chỉ để duy trì
     }
 
-    ChapterEvent.off('chapterChanged', handler);
+    removeEventListener();
   };
 
   const startBackgroundService = async () => {
@@ -79,6 +70,11 @@ const Audio = () => {
       color: '#ff00ff',
       linkingURI: 'yourapp://home',
     });
+  };
+
+  const removeEventListener = () => {
+    console.log('removeListener');
+    ChapterEvent.removeListener('chapterChanged', handler);
   };
 
   useEffect(() => {
@@ -98,32 +94,37 @@ const Audio = () => {
       setIsInitialized(true);
     };
 
-    console.log('registeredTask', registeredTask);
+    // console.log('registeredTask', registeredTask);
+
+    restoreState();
 
     if (!registeredTask) {
       startBackgroundService();
       setRegisteredTask(true);
     }
-    restoreState();
+
+    if (currentChapter) {
+      ChapterEvent.emit('chapterChanged', currentChapter.index);
+    }
   }, []);
 
-  useEffect(() => {
-    if (isInitialized) {
-      saveState('voice', voice);
-    }
-  }, [voice, isInitialized]);
+  // useEffect(() => {
+  //   if (isInitialized) {
+  //     saveState('voice', voice);
+  //   }
+  // }, [voice, isInitialized]);
 
-  useEffect(() => {
-    if (isInitialized) {
-      saveState('pitch', pitch);
-    }
-  }, [pitch, isInitialized]);
+  // useEffect(() => {
+  //   if (isInitialized) {
+  //     saveState('pitch', pitch);
+  //   }
+  // }, [pitch, isInitialized]);
 
-  useEffect(() => {
-    if (isInitialized) {
-      saveState('rate', rate);
-    }
-  }, [rate, isInitialized]);
+  // useEffect(() => {
+  //   if (isInitialized) {
+  //     saveState('rate', rate);
+  //   }
+  // }, [rate, isInitialized]);
 
   // useEffect(() => {
   //   if (sentences.length > 0 && isInitialized) {
@@ -135,10 +136,15 @@ const Audio = () => {
   useEffect(() => {
     const progress = (currentSentenceIndex / sentences.length) * 100;
     setCurrentPosition(progress);
+
+    if (isSpeaking && sentences) {
+      stop();
+      speak(sentences, currentSentenceIndex);
+    }
   }, [currentSentenceIndex]);
 
   const speakHandler = () => {
-    speak(sentences, 0);
+    speak(sentences, currentSentenceIndex);
   };
 
   const stopHandler = () => {
@@ -151,6 +157,7 @@ const Audio = () => {
   const backToList = () => {
     stop();
     setCurrentChapter(null);
+    removeEventListener();
   };
 
   const onNextChapter = () => {
@@ -159,6 +166,7 @@ const Audio = () => {
     }
 
     setCurrentChapter(chapters[currentChapter.index]);
+    ChapterEvent.emit('chapterChanged', currentChapter.index + 1);
   };
 
   const onPreviousChapter = () => {
@@ -169,13 +177,13 @@ const Audio = () => {
     setCurrentChapter(chapters[currentChapter.index - 2]);
   };
 
-  if (!isInitialized || !currentChapter || !sentences.length) {
-    return (
-      <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Đang tải...</Text>
-      </View>
-    );
-  }
+  // if (!isInitialized || !currentChapter || !sentences.length) {
+  //   return (
+  //     <View style={styles.loadingContainer}>
+  //       <Text style={styles.loadingText}>Đang tải...</Text>
+  //     </View>
+  //   );
+  // }
 
   return (
     <View style={styles.container}>
@@ -191,7 +199,7 @@ const Audio = () => {
           <TouchableOpacity onPress={openModal} style={styles.navIcon}>
             <Icon name="help-outline" size={24} color="#000" />
           </TouchableOpacity>
-          <VoiceSettings
+          {/* <VoiceSettings
             visible={isModalVisible}
             onClose={closeModal}
             pitch={pitch}
@@ -200,7 +208,7 @@ const Audio = () => {
             onRateChange={(value) => setRate(value)}
             voice={voice}
             onVoiceChange={(value) => setVoice(value)}
-          />
+          /> */}
         </View>
       </View>
 
@@ -231,10 +239,6 @@ const Audio = () => {
         onSlidingComplete={(value) => {
           const sentenceIndex = Math.floor((value / 100) * sentences.length);
           setCurrentSentenceIndex(sentenceIndex);
-          if (isSpeaking) {
-            stop();
-            speakHandler();
-          }
         }}
       />
       {/* Nút điều khiển */}

@@ -1,13 +1,13 @@
+import ChapterEvent from '@/events/ChapterEvent';
 import { get, set } from '@/helpers/mmkvStoreUtils';
-import ChapterEvent from '@app/events/ChapterEvent';
 import * as Speech from 'expo-speech';
 import { StoreValueType } from '../types/StoreValueType';
 
 export const speak = (sentences: string[], index: number): void => {
-  console.log('speak', sentences);
+  console.log('speak');
   const voice = get('voice') || 'vi-vn-x-vic-local';
-  const pitch = get('pitch', StoreValueType.Number) || 1;
-  const rate = get('rate', StoreValueType.Number) || 1;
+  const pitch = get('pitch', StoreValueType.Number) || 1.1;
+  const rate = get('rate', StoreValueType.Number) || 1.8;
 
   if (index < sentences.length) {
     Speech.speak(sentences[index], {

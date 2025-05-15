@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import * as Speech from 'expo-speech';
-import { View, Text, TouchableOpacity, Modal, StyleSheet } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { Picker } from '@react-native-picker/picker';
+import * as Speech from 'expo-speech';
+import React, { useEffect, useState } from 'react';
+import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface SettingsModalProps {
   visible: boolean;
@@ -30,32 +30,25 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 
   useEffect(() => {
     const fetchVoices = async () => {
-      try {
-        let voices: Speech.Voice[] = [];
+      let voices: Speech.Voice[] = [];
 
-        // Chờ cho đến khi TTS sẵn sàng
-        while (voices.length === 0) {
+      // Chờ cho đến khi TTS sẵn sàng
+      while (voices.length === 0) {
+        try {
           voices = await Speech.getAvailableVoicesAsync();
+
           if (voices.length === 0) {
             console.log('TTS not ready. Waiting...');
-            await new Promise((resolve) => setTimeout(resolve, 1000)); // Chờ 1 giây trước khi thử lại
+            await new Promise((resolve) => setTimeout(resolve, 500)); // Chờ 1 giây trước khi thử lại
           }
-        }
-
-        if (voices.length === 0) {
-          console.warn('No voices available after multiple attempts.');
-          return;
-        }
-
-        const vietnameseVoices = voices.filter((voice) =>
-          voice.language.startsWith('vi'),
-        );
-        setVoices(vietnameseVoices); // Lưu danh sách giọng đọc tiếng Việt
-      } catch (error) {
-        console.error('Error fetching voices:', error);
-      } finally {
-        setIsFetchingVoices(false); // Kết thúc tải
+        } catch {}
       }
+
+      const vietnameseVoices = voices.filter((voice) =>
+        voice.language.startsWith('vi')
+      );
+
+      setVoices(vietnameseVoices); // Lưu danh sách giọng đọc tiếng Việt
     };
 
     fetchVoices();

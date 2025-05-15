@@ -1,3 +1,7 @@
+import useAppStore from '@/store/store';
+import { Book } from '@/types/Book';
+import { Chapter } from '@/types/Chapter';
+import ChapterList from '@app/components/ChapterList';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
@@ -8,10 +12,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Book } from '../../src/types/Book';
-import { Chapter } from '../../src/types/Chapter';
-import ChapterList from '../components/ChapterList';
-import useAppStore from '../store/store';
 import Audio from './Audio';
 
 interface BookDetailProps {
@@ -27,6 +27,7 @@ const BookDetail: React.FC<BookDetailProps> = ({ book, onBack }) => {
   const setCurrentChapter = useAppStore((state) => state.setCurrentChapter);
 
   const onChapterSelect = (chapter: Chapter) => {
+    console.log("🚀 ~ onChapterSelect ~ chapter:", chapter)
     setCurrentChapter(chapter);
   };
 
@@ -68,7 +69,7 @@ const BookDetail: React.FC<BookDetailProps> = ({ book, onBack }) => {
 
   return (
     <View style={styles.container}>
-      {currentBook !== null && currentChapter !== null && sentences.length ? (
+      {currentBook !== null && currentChapter !== null ? (
         <Audio />
       ) : (
         <FlatList

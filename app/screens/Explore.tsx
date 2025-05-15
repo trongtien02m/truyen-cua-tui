@@ -1,3 +1,6 @@
+import useAppStore from '@/store/store';
+import { Book } from '@/types/Book'; // Import interface từ thư mục types
+import Pagination from '@app/components/Pagination'; // Import Pagination component
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -9,9 +12,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Book } from '../../src/types/Book'; // Import interface từ thư mục types
-import Pagination from '../components/Pagination'; // Import Pagination component
-import useAppStore from '../store/store';
 import BookDetail from './BookDetail'; // Import trang chi tiết truyện
 
 const Explore = () => {
@@ -50,7 +50,7 @@ const Explore = () => {
 
       try {
         const url = `https://backend.metruyencv.com/api/books/search?keyword=${encodeURIComponent(
-          debouncedQuery,
+          debouncedQuery
         )}&page=${page}`;
         const response = await fetch(url);
         const data = await response.json();
