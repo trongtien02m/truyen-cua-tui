@@ -1,86 +1,12 @@
-import Explore from '@app/screens/Explore'; // Component mới cho tab "Khám phá"
-import StoryList from '@app/screens/StoryList';
-import React, { useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-// import * as Speech from "expo-speech";
+// import HomeScreen from '@app/screens/HomeScreen';
+import { StyleSheet, View } from 'react-native';
+import HomeScreen from './screens/HomeScreen';
 
 const App = () => {
-  const [activeTab, setActiveTab] = useState('MyStories'); // Quản lý tab hiện tại
-
-  const renderContent = () => {
-    if (activeTab === 'MyStories') {
-      return <StoryList />;
-    } else if (activeTab === 'Explore') {
-      return <Explore />;
-    }
-    return null;
-  };
-
-  // const speak = (sentence: string) => {
-  //   Speech.speak(sentence, {
-  //     language: "vi-VN",
-  //     voice: "vi-vn-x-vic-local",
-  //     pitch: 1.1,
-  //     rate: 2,
-  //   });
-  // };
-
-  // const read = () => {
-  //   console.log("read");
-  //   const sentences = [
-  //     "3 vạn * 2000= 100. 000. 000 ức quá hạ tiền!",
-  //   ];
-
-  //   for (const sentence of sentences) {
-  //     const refineText = sentence
-  //     .replace("·", "")
-  //     .replace(/(\d\.)\s(\d)/g, "$1$2");
-  //     console.log("🚀 ~ read ~ refineText:", refineText)
-
-  //     speak(refineText);
-  //   }
-  // };
-
-  // setTimeout(() => {
-  //   read();
-  // }, 1000);
-
   return (
     <View style={styles.container}>
-      {/* Nội dung chính */}
-      <View style={styles.content}>{renderContent()}</View>
-
-      {/* Tab bar */}
-      <View style={styles.tabBar}>
-        <TouchableOpacity
-          style={[
-            styles.tabItem,
-            activeTab === 'MyStories' && styles.activeTab,
-          ]}
-          onPress={() => setActiveTab('MyStories')}
-        >
-          <Text
-            style={[
-              styles.tabText,
-              activeTab === 'MyStories' && styles.activeTabText,
-            ]}
-          >
-            Truyện của tôi
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tabItem, activeTab === 'Explore' && styles.activeTab]}
-          onPress={() => setActiveTab('Explore')}
-        >
-          <Text
-            style={[
-              styles.tabText,
-              activeTab === 'Explore' && styles.activeTabText,
-            ]}
-          >
-            Khám phá
-          </Text>
-        </TouchableOpacity>
+      <View style={styles.content}>
+        <HomeScreen />
       </View>
     </View>
   );
@@ -95,45 +21,5 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-  },
-  tabBar: {
-    flexDirection: 'row',
-    padding: 10,
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 5, // Bóng đổ cho Android
-  },
-  tabItem: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 10,
-    marginHorizontal: 5,
-    borderRadius: 15,
-    borderWidth: 2, // Thêm viền
-    borderColor: '#ccc', // Màu viền mặc định
-  },
-  tabText: {
-    fontSize: 16,
-    color: '#666',
-    fontWeight: '500',
-  },
-  activeTab: {
-    backgroundColor: '#007BFF',
-    borderColor: '#007BFF', // Màu viền cho tab đang chọn
-    shadowColor: '#007BFF',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 3, // Bóng đổ cho Android
-  },
-  activeTabText: {
-    color: '#fff',
-    fontWeight: 'bold',
   },
 });

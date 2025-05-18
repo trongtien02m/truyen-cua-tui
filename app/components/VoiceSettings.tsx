@@ -4,7 +4,7 @@ import * as Speech from 'expo-speech';
 import React, { useEffect, useState } from 'react';
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-interface SettingsModalProps {
+interface VoiceSettingsProps {
   visible: boolean;
   onClose: () => void;
   pitch: number;
@@ -15,7 +15,7 @@ interface SettingsModalProps {
   onVoiceChange: (voice: string) => void;
 }
 
-const SettingsModal: React.FC<SettingsModalProps> = ({
+const VoiceSettings: React.FC<VoiceSettingsProps> = ({
   visible,
   onClose,
   pitch,
@@ -29,29 +29,56 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   const [isFetchingVoices, setIsFetchingVoices] = useState(true); // Theo dõi trạng thái tải
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchVoices = async () => {
       let voices: Speech.Voice[] = [];
 
-      // Chờ cho đến khi TTS sẵn sàng
-      while (voices.length === 0) {
+      try {
+        // Đánh thức TTS bằng 1 câu nói ngắn
+        Speech.speak('', {
+          rate: 0.5,
+          pitch: 1,
+          voice: voice ?? undefined,
+          onDone: () => {},
+        });
+      } catch {
+        // Không sao nếu lỗi, chỉ để thử khởi tạo TTS
+      }
+
+      while (voices.length === 0 && isMounted) {
         try {
+          console.log('fetch voices');
           voices = await Speech.getAvailableVoicesAsync();
 
-          if (voices.length === 0) {
+          if (voices.length === 0 && isMounted) {
             console.log('TTS not ready. Waiting...');
-            await new Promise((resolve) => setTimeout(resolve, 500)); // Chờ 1 giây trước khi thử lại
+            await new Promise((resolve) => setTimeout(resolve, 500));
           }
-        } catch {}
+        } catch (error) {
+          console.error('Error fetching voices', error);
+          break;
+        }
       }
+
+      if (!isMounted) return;
+
+      console.log('hasVoice');
+
+      setIsFetchingVoices(false);
 
       const vietnameseVoices = voices.filter((voice) =>
         voice.language.startsWith('vi')
       );
 
-      setVoices(vietnameseVoices); // Lưu danh sách giọng đọc tiếng Việt
+      setVoices(vietnameseVoices);
     };
 
     fetchVoices();
+
+    return () => {
+      isMounted = false; // Ngăn setState sau khi unmount
+    };
   }, []);
 
   if (isFetchingVoices) {
@@ -125,7 +152,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   );
 };
 
-export default SettingsModal;
+export default VoiceSettings;
 
 const styles = StyleSheet.create({
   modalContainer: {

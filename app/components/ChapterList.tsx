@@ -1,6 +1,7 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import {
   FlatList,
+  FlatList as RNFlatList,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -10,31 +11,58 @@ import { Chapter } from '../../src/types/Chapter';
 
 interface ChapterListProps {
   chapters: Chapter[];
+  currentReadingChapter: number;
   onChapterSelect: (chapter: Chapter) => void;
 }
 
 const ChapterList: React.FC<ChapterListProps> = ({
   chapters,
+  currentReadingChapter,
   onChapterSelect,
 }) => {
-  // Tối ưu hóa renderItem bằng cách sử dụng React.memo
+  const flatListRef = useRef<RNFlatList>(null);
+
+  // Cuộn đến chương hiện tại khi component mount
+  useEffect(() => {
+    if (flatListRef.current && currentReadingChapter >= 0) {
+      setTimeout(() => {
+        flatListRef.current?.scrollToIndex({
+          index: currentReadingChapter,
+          animated: false,
+        });
+      }, 0);
+    }
+  }, [currentReadingChapter]);
+
   const renderItem = useCallback(
-    ({ item }: { item: Chapter }) => (
-      <TouchableOpacity
-        style={styles.chapterItem}
-        onPress={() => onChapterSelect(item)}
-      >
-        <Text style={styles.chapterTitle}>{item.name}</Text>
-        <Text style={styles.chapterDate}>
-          {new Date(item.published_at).toLocaleDateString('vi-VN', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-          })}
-        </Text>
-      </TouchableOpacity>
-    ),
-    [onChapterSelect],
+    ({ item }: { item: Chapter }) => {
+      const isCurrent = item.index === currentReadingChapter;
+      return (
+        <TouchableOpacity
+          style={[styles.chapterItem, isCurrent && styles.currentChapter]}
+          onPress={() => onChapterSelect(item)}
+        >
+          <Text
+            style={[
+              styles.chapterTitle,
+              isCurrent && styles.currentChapterTitle,
+            ]}
+          >
+            {item.name}
+          </Text>
+          <Text
+            style={[styles.chapterDate, isCurrent && styles.currentChapterDate]}
+          >
+            {new Date(item.published_at).toLocaleDateString('vi-VN', {
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit',
+            })}
+          </Text>
+        </TouchableOpacity>
+      );
+    },
+    [onChapterSelect, currentReadingChapter]
   );
 
   return (
@@ -43,10 +71,7 @@ const ChapterList: React.FC<ChapterListProps> = ({
       <FlatList
         data={chapters}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={renderItem} // Sử dụng renderItem đã tối ưu hóa
-        initialNumToRender={10} // Giới hạn số lượng item render ban đầu
-        maxToRenderPerBatch={10} // Giới hạn số lượng item render mỗi lần
-        windowSize={5} // Tăng hiệu suất bằng cách điều chỉnh windowSize
+        renderItem={renderItem}
       />
     </View>
   );
@@ -71,14 +96,23 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     elevation: 2,
   },
+  currentChapter: {
+    backgroundColor: '#D4AF37',
+  },
   chapterTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
   },
+  currentChapterTitle: {
+    color: '#fff',
+  },
   chapterDate: {
     fontSize: 14,
     color: '#666',
     marginTop: 5,
+  },
+  currentChapterDate: {
+    color: '#fff',
   },
 });

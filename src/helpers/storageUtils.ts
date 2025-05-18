@@ -32,7 +32,6 @@ export const checkStorage = async () => {
   try {
     const keys = await AsyncStorage.getAllKeys();
     const values = await AsyncStorage.multiGet(keys);
-    console.log('Stored keys and values:', values);
   } catch (error) {
     console.error('Error checking AsyncStorage:', error);
   }

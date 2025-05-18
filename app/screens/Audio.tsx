@@ -1,11 +1,15 @@
 import ChapterEvent from '@/events/ChapterEvent';
 import { loadState } from '@/helpers/storageUtils';
+import { updateMyBooks } from '@/service/account';
 import { speak, stop } from '@/service/audio';
 import { fetchChapterContent } from '@/service/book';
 import useAppStore from '@/store/store';
+import VoiceSettings from '@app/components/VoiceSettings';
 import Slider from '@react-native-community/slider';
-import React, { useEffect, useState } from 'react';
+import { router } from 'expo-router';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
+  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -16,7 +20,6 @@ import BackgroundService from 'react-native-background-actions';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const Audio = () => {
-  const [registeredTask, setRegisteredTask] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(true);
   const [currentPosition, setCurrentPosition] = useState(0);
   const [currentSentenceIndex, setCurrentSentenceIndex] = useState(0);
@@ -24,127 +27,138 @@ const Audio = () => {
   const [voice, setVoice] = useState('vi-vn-x-vic-local');
   const [pitch, setPitch] = useState(1);
   const [rate, setRate] = useState(1);
-  const [isInitialized, setIsInitialized] = useState(false);
 
-  const currentBook = useAppStore((state) => state.currentBook);
-  const currentChapter = useAppStore((state) => state.currentChapter);
-  const chapters = useAppStore((state) => state.chapters);
+  const [taskStarted, setTaskStarted] = useState(false);
+  const [isListenerAdded, setIsListenerAdded] = useState(false);
+
+  const currentBook = useAppStore((state) => state.currentBook)!;
+  const currentChapter = useAppStore((state) => state.currentChapter)!;
+  const chapters = useAppStore((state) => state.chapters)!;
   const sentences = useAppStore((state) => state.sentences);
+  const setSentences = useAppStore((state) => state.setSentences);
   const setCurrentChapter = useAppStore((state) => state.setCurrentChapter);
 
   const sleep = (time: number) =>
     new Promise((resolve) => setTimeout(resolve, time));
 
-  const handler = async (chapter: number) => {
-    console.log('handle chapter change');
-    if (!currentBook || !currentChapter) return;
+  // Handler giữ nguyên tham chiếu để removeListener hoạt động
+  const chapterChangeHandler = useCallback(async (chapterIndex: number) => {
+    if (chapterIndex > currentBook.chapter_count) return;
 
-    const bookSlug = currentBook.slug;
+    const chapterInfo = chapters.find((c) => c.index === chapterIndex);
 
-    const chapterContent = await fetchChapterContent(bookSlug, chapter);
-    console.log("🚀 ~ handler ~ chapterContent:", chapterContent[0])
+    if (!chapterInfo) return;
 
+    setCurrentChapter(chapterInfo);
+
+    updateMyBooks({
+      ...currentBook,
+      current_reading_chapter: chapterInfo.index,
+    });
+
+    const chapterContent = await fetchChapterContent(
+      currentBook.slug,
+      chapterIndex
+    );
+    setSentences(chapterContent);
     stop();
-    speak(chapterContent, 0);
-  };
+    speak({
+      sentences: chapterContent,
+      index: 0,
+      updateSentenceIndex,
+    });
+  }, []);
+
+  const sentenceIndexChangeHandler = useCallback(
+    async (sentenceIndex: number) => {
+      if (!currentBook) return;
+
+      setCurrentSentenceIndex(sentenceIndex);
+
+      stop();
+      speak({
+        sentences,
+        index: sentenceIndex,
+        updateSentenceIndex,
+      });
+    },
+    []
+  );
 
   const speakTask = async () => {
-    ChapterEvent.on('chapterChanged', handler);
-
-    while (BackgroundService.isRunning()) {
-      await sleep(10000); // Không làm gì cả, chỉ để duy trì
+    if (!taskStarted) {
+      ChapterEvent.on('chapterChanged', chapterChangeHandler);
+      ChapterEvent.on('sentenceIndexChanged', sentenceIndexChangeHandler);
+      setIsListenerAdded(true);
     }
 
-    removeEventListener();
+    while (BackgroundService.isRunning()) {
+      await sleep(10000);
+    }
   };
 
   const startBackgroundService = async () => {
-    await BackgroundService.start(speakTask, {
-      taskName: 'TimeLogger',
-      taskTitle: 'Time Logger Running',
-      taskDesc: 'Logging time every second...',
-      taskIcon: {
-        name: 'ic_launcher',
-        type: 'mipmap',
-      },
-      color: '#ff00ff',
-      linkingURI: 'yourapp://home',
-    });
+    if (!taskStarted) {
+      await BackgroundService.start(speakTask, {
+        taskName: 'TimeLogger',
+        taskTitle: 'Đang đọc sách',
+        taskDesc: 'Ứng dụng đang đọc nội dung chương...',
+        taskIcon: {
+          name: 'ic_launcher',
+          type: 'mipmap',
+        },
+        color: '#ff00ff',
+        linkingURI: 'yourapp://home',
+      });
+      setTaskStarted(true);
+    }
+  };
+
+  const updateSentenceIndex = (index: number) => {
+    setCurrentSentenceIndex(index);
   };
 
   const removeEventListener = () => {
-    console.log('removeListener');
-    ChapterEvent.removeListener('chapterChanged', handler);
+    ChapterEvent.removeListener('chapterChanged', chapterChangeHandler);
   };
 
+  // ✅ INIT + START TASK
   useEffect(() => {
     const restoreState = async () => {
-      // const savedChapter = await loadState("currentChapter");
-      // const savedSentenceIndex = await loadState("currentSentenceIndex");
       const savedVoice = (await loadState('voice')) || 'vi-vn-x-vic-local';
       const savedPitch = (await loadState('pitch')) || 1;
       const savedRate = (await loadState('rate')) || 1.8;
 
-      // setCurrentChapter(savedChapter);
-      // setCurrentSentenceIndex(savedSentenceIndex);
       setVoice(savedVoice);
       setPitch(savedPitch);
       setRate(savedRate);
-
-      setIsInitialized(true);
     };
 
-    // console.log('registeredTask', registeredTask);
-
     restoreState();
+    startBackgroundService();
 
-    if (!registeredTask) {
-      startBackgroundService();
-      setRegisteredTask(true);
-    }
-
-    if (currentChapter) {
-      ChapterEvent.emit('chapterChanged', currentChapter.index);
-    }
+    return () => {
+      // ✅ Cleanup listener on unmount
+      stop();
+      removeEventListener();
+    };
   }, []);
 
-  // useEffect(() => {
-  //   if (isInitialized) {
-  //     saveState('voice', voice);
-  //   }
-  // }, [voice, isInitialized]);
-
-  // useEffect(() => {
-  //   if (isInitialized) {
-  //     saveState('pitch', pitch);
-  //   }
-  // }, [pitch, isInitialized]);
-
-  // useEffect(() => {
-  //   if (isInitialized) {
-  //     saveState('rate', rate);
-  //   }
-  // }, [rate, isInitialized]);
-
-  // useEffect(() => {
-  //   if (sentences.length > 0 && isInitialized) {
-  //     stop();
-  //     speakHandler();
-  //   }
-  // }, [sentences, isInitialized]);
+  useEffect(() => {
+    if (isListenerAdded) {
+      ChapterEvent.emit('chapterChanged', currentChapter?.index);
+    }
+  }, [isListenerAdded]);
 
   useEffect(() => {
+    if (!sentences.length) return;
     const progress = (currentSentenceIndex / sentences.length) * 100;
     setCurrentPosition(progress);
-
-    if (isSpeaking && sentences) {
-      stop();
-      speak(sentences, currentSentenceIndex);
-    }
   }, [currentSentenceIndex]);
 
   const speakHandler = () => {
-    speak(sentences, currentSentenceIndex);
+    speak({ sentences, index: currentSentenceIndex, updateSentenceIndex });
+    setIsSpeaking(true);
   };
 
   const stopHandler = () => {
@@ -153,37 +167,44 @@ const Audio = () => {
   };
 
   const openModal = () => setIsModalVisible(true);
-  const closeModal = () => setIsModalVisible(false);
+
   const backToList = () => {
     stop();
-    setCurrentChapter(null);
-    removeEventListener();
+    setCurrentChapter(undefined);
+    router.push('/screens/BookDetail');
+  };
+
+  const slidingCompleteHandle = (value: number) => {
+    const newIndex = Math.floor((value / 100) * sentences.length);
+    setCurrentSentenceIndex(newIndex);
+    stop();
+    speak({
+      sentences,
+      index: newIndex,
+      updateSentenceIndex,
+    });
+    setIsSpeaking(true);
   };
 
   const onNextChapter = () => {
-    if (!chapters || !currentChapter) {
-      return;
-    }
-
-    setCurrentChapter(chapters[currentChapter.index]);
-    ChapterEvent.emit('chapterChanged', currentChapter.index + 1);
+    const nextIndex = currentChapter.index + 1;
+    setCurrentChapter(chapters[nextIndex]);
+    ChapterEvent.emit('chapterChanged', nextIndex);
   };
 
   const onPreviousChapter = () => {
-    if (!chapters || !currentChapter) {
-      return;
-    }
-
-    setCurrentChapter(chapters[currentChapter.index - 2]);
+    const prevIndex = currentChapter.index - 1;
+    setCurrentChapter(chapters[prevIndex]);
+    ChapterEvent.emit('chapterChanged', prevIndex);
   };
 
-  // if (!isInitialized || !currentChapter || !sentences.length) {
-  //   return (
-  //     <View style={styles.loadingContainer}>
-  //       <Text style={styles.loadingText}>Đang tải...</Text>
-  //     </View>
-  //   );
-  // }
+  if (!sentences?.length || !currentChapter) {
+    return (
+      <View>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -199,27 +220,27 @@ const Audio = () => {
           <TouchableOpacity onPress={openModal} style={styles.navIcon}>
             <Icon name="help-outline" size={24} color="#000" />
           </TouchableOpacity>
-          {/* <VoiceSettings
+          <VoiceSettings
             visible={isModalVisible}
-            onClose={closeModal}
+            onClose={() => setIsModalVisible(false)}
             pitch={pitch}
             rate={rate}
             onPitchChange={(value) => setPitch(value)}
             onRateChange={(value) => setRate(value)}
             voice={voice}
             onVoiceChange={(value) => setVoice(value)}
-          /> */}
+          />
         </View>
       </View>
 
       {/* Hình ảnh bìa và tiêu đề chương */}
       <View style={styles.chapterInfo}>
-        {/* <Image
-              source={{
-                uri: "https://example.com/cover.jpg", // Thay bằng URL hình ảnh bìa
-              }}
-              style={styles.coverImage}
-            /> */}
+        <Image
+          source={{
+            uri: currentBook.poster.default, // Thay bằng URL hình ảnh bìa
+          }}
+          style={styles.coverImage}
+        />
         <Text style={styles.chapterTitle}>{currentChapter?.name}</Text>
       </View>
 
@@ -237,8 +258,7 @@ const Audio = () => {
         step={(1 / sentences.length) * 100}
         value={currentPosition}
         onSlidingComplete={(value) => {
-          const sentenceIndex = Math.floor((value / 100) * sentences.length);
-          setCurrentSentenceIndex(sentenceIndex);
+          slidingCompleteHandle(value);
         }}
       />
       {/* Nút điều khiển */}
@@ -247,9 +267,9 @@ const Audio = () => {
           onPress={onPreviousChapter}
           style={[
             styles.iconButton,
-            // chapterIndex === 1 && styles.disabledButton,
+            currentChapter.index === 1 && styles.disabledButton,
           ]}
-          // disabled={chapterData.chapter.previous?.index === undefined}
+          disabled={currentChapter.index === 1}
         >
           <Icon
             name="skip-previous"
@@ -294,8 +314,6 @@ const Audio = () => {
     </View>
   );
 };
-
-export default Audio;
 
 const styles = StyleSheet.create({
   container: {
@@ -363,6 +381,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    paddingBottom: 20,
   },
   iconButton: {
     marginHorizontal: 20,
@@ -395,3 +414,5 @@ const styles = StyleSheet.create({
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   loadingText: { fontSize: 18, fontWeight: 'bold' },
 });
+
+export default Audio;

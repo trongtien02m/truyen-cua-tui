@@ -1,6 +1,8 @@
+import { searchBook } from '@/service/book';
 import useAppStore from '@/store/store';
 import { Book } from '@/types/Book'; // Import interface từ thư mục types
 import Pagination from '@app/components/Pagination'; // Import Pagination component
+import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -12,7 +14,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import BookDetail from './BookDetail'; // Import trang chi tiết truyện
 
 const Explore = () => {
   const [page, setPage] = useState(1); // Trang hiện tại
@@ -21,9 +22,8 @@ const Explore = () => {
   const [results, setResults] = useState<Book[]>([]); // Kết quả tìm kiếm
   const [debouncedQuery, setDebouncedQuery] = useState(''); // Giá trị debounce
   const [loading, setLoading] = useState(false); // Trạng thái loading
-  const [error, setError] = useState<string | null>(null); // Trạng thái lỗi
+  const [error, setError] = useState<string | undefined>(undefined); // Trạng thái lỗi
 
-  const currentBook = useAppStore((state) => state.currentBook);
   const setCurrentBook = useAppStore((state) => state.setCurrentBook);
 
   // Xử lý debounce
@@ -46,35 +46,30 @@ const Explore = () => {
       }
 
       setLoading(true);
-      setError(null);
+      setError(undefined);
 
-      try {
-        const url = `https://backend.metruyencv.com/api/books/search?keyword=${encodeURIComponent(
-          debouncedQuery
-        )}&page=${page}`;
-        const response = await fetch(url);
-        const data = await response.json();
-        setResults(data.data || []);
-        setTotalPages(data.pagination.last); // Cập nhật tổng số trang
-      } catch {
-        setError('Có lỗi xảy ra khi tìm kiếm.');
-      } finally {
-        setLoading(false);
+      const { data, totalPage, error } = await searchBook({
+        query: debouncedQuery,
+        page,
+      });
+
+      if (data) {
+        setResults(data);
+        setTotalPages(totalPage); // Cập nhật tổng số trang
+      } else {
+        setError(error);
       }
+
+      setLoading(false);
     };
 
     handleSearch();
   }, [debouncedQuery, page]);
 
-  // Nếu có truyện được chọn, hiển thị trang chi tiết
-  if (currentBook) {
-    return (
-      <BookDetail
-        book={currentBook}
-        onBack={() => setCurrentBook(null)} // Quay lại danh sách
-      />
-    );
-  }
+  const selectBook = (item: Book) => {
+    setCurrentBook(item);
+    router.push('/screens/BookDetail');
+  };
 
   return (
     <View style={styles.container}>
@@ -91,7 +86,7 @@ const Explore = () => {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.resultItem}
-            onPress={() => setCurrentBook(item)} // Chọn truyện
+            onPress={() => selectBook(item)} // Chọn truyện
           >
             <Image
               source={{ uri: item.poster.default }}

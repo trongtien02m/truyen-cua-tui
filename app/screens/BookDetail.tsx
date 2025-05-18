@@ -1,8 +1,12 @@
+import { get } from '@/helpers/mmkvStoreUtils';
+import { updateMyBooks } from '@/service/account';
 import useAppStore from '@/store/store';
 import { Book } from '@/types/Book';
 import { Chapter } from '@/types/Chapter';
+import { StoreValueType } from '@/types/StoreValueType';
 import ChapterList from '@app/components/ChapterList';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import React from 'react';
 import {
   FlatList,
@@ -12,23 +16,42 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import Audio from './Audio';
 
-interface BookDetailProps {
-  book: Book;
-  onBack: () => void;
-}
-
-const BookDetail: React.FC<BookDetailProps> = ({ book, onBack }) => {
-  const currentBook = useAppStore((state) => state.currentBook);
+const BookDetail = () => {
+  const currentBook = useAppStore((state) => state.currentBook)!;
   const chapters = useAppStore((state) => state.chapters) || [];
-  const currentChapter = useAppStore((state) => state.currentChapter);
-  const sentences = useAppStore((state) => state.sentences);
   const setCurrentChapter = useAppStore((state) => state.setCurrentChapter);
+  const setCurrentBook = useAppStore((state) => state.setCurrentBook);
 
   const onChapterSelect = (chapter: Chapter) => {
-    console.log("🚀 ~ onChapterSelect ~ chapter:", chapter)
     setCurrentChapter(chapter);
+    setCurrentBook({
+      ...currentBook,
+      current_reading_chapter: chapter.index,
+    });
+    updateMyBooks({
+      ...currentBook,
+      current_reading_chapter: chapter.index,
+    });
+    router.push('/screens/Audio');
+  };
+
+  const onRead = () => {
+    const myBooks = get('myBooks', StoreValueType.Object) || [];
+    const currentReadingChapter =
+      myBooks.find((b: Book) => b.id === currentBook.id)
+        ?.current_reading_chapter || 1;
+    const chapter = chapters[currentReadingChapter - 1];
+    setCurrentChapter(chapter);
+    setCurrentBook({
+      ...currentBook,
+      current_reading_chapter: currentReadingChapter,
+    });
+    router.push('/screens/Audio');
+  };
+
+  const onBack = () => {
+    router.push('/screens/HomeScreen');
   };
 
   const renderHeader = () => (
@@ -50,7 +73,7 @@ const BookDetail: React.FC<BookDetailProps> = ({ book, onBack }) => {
           <Text style={styles.author}>
             Tác giả: {currentBook.author?.name || 'Không rõ'}
           </Text>
-          <TouchableOpacity style={styles.readButton}>
+          <TouchableOpacity style={styles.readButton} onPress={onRead}>
             <Text style={styles.readButtonText}>Đọc Truyện</Text>
           </TouchableOpacity>
           <View style={styles.statsContainer}>
@@ -69,21 +92,18 @@ const BookDetail: React.FC<BookDetailProps> = ({ book, onBack }) => {
 
   return (
     <View style={styles.container}>
-      {currentBook !== null && currentChapter !== null ? (
-        <Audio />
-      ) : (
-        <FlatList
-          ListHeaderComponent={renderHeader}
-          data={[]}
-          renderItem={null}
-          ListFooterComponent={
-            <ChapterList
-              chapters={chapters}
-              onChapterSelect={(chapter) => onChapterSelect(chapter)}
-            />
-          }
-        />
-      )}
+      <FlatList
+        ListHeaderComponent={renderHeader}
+        data={[]}
+        renderItem={null}
+        ListFooterComponent={
+          <ChapterList
+            chapters={chapters}
+            currentReadingChapter={currentBook?.current_reading_chapter || 1}
+            onChapterSelect={(chapter) => onChapterSelect(chapter)}
+          />
+        }
+      />
     </View>
   );
 };

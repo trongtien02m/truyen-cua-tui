@@ -3,19 +3,36 @@ import { get, set } from '@/helpers/mmkvStoreUtils';
 import * as Speech from 'expo-speech';
 import { StoreValueType } from '../types/StoreValueType';
 
-export const speak = (sentences: string[], index: number): void => {
-  console.log('speak');
+export const speak = ({
+  sentences,
+  index,
+  updateSentenceIndex,
+}: {
+  sentences: string[];
+  index: number;
+  updateSentenceIndex: (index: number) => void;
+}): void => {
+  if (!sentences?.length) return;
+
   const voice = get('voice') || 'vi-vn-x-vic-local';
   const pitch = get('pitch', StoreValueType.Number) || 1.1;
   const rate = get('rate', StoreValueType.Number) || 1.8;
 
   if (index < sentences.length) {
+    // Cập nhật chỉ số câu hiện tại
+    updateSentenceIndex(index);
+
     Speech.speak(sentences[index], {
       language: 'vi-VN',
-      voice: voice,
-      pitch: pitch,
-      rate: rate,
-      onDone: () => speak(sentences, index + 1),
+      voice,
+      pitch,
+      rate,
+      onDone: () =>
+        speak({
+          sentences,
+          index: index + 1,
+          updateSentenceIndex,
+        }),
     });
   } else {
     const nextChapter = get('currentChapter', StoreValueType.Number) + 1;
@@ -23,8 +40,6 @@ export const speak = (sentences: string[], index: number): void => {
     ChapterEvent.emit('chapterChanged', nextChapter);
   }
 };
-
 export const stop = () => {
-  console.log('stop');
   Speech.stop();
 };

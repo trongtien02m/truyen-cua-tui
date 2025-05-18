@@ -1,21 +1,21 @@
-import decryptContent from '@/helpers/decryptContent';
 import { Book } from '@/types/Book';
 import { Chapter } from '@/types/Chapter';
 import { create } from 'zustand';
+import { chapters, currentBook } from './mockData';
 
 interface AppState {
   currentBook: Book | null; // Sách hiện tại
   setCurrentBook: (book: Book | null) => void;
   chapters: Chapter[] | null; // Danh sách chương
   currentChapter: Chapter | null; // Chương hiện tại
-  setCurrentChapter: (chapter: Chapter | null) => void;
+  setCurrentChapter: (chapter: Chapter | undefined) => void;
   sentences: string[]; // Nội dung chương
+  setSentences: (sentences: string[]) => void;
   fetchChapters: () => Promise<void>;
-  fetchChapterContent: () => Promise<void>;
 }
 
 const useAppStore = create<AppState>((set, get) => ({
-  currentBook: null, // Giá trị mặc định
+  currentBook: currentBook, // Giá trị mặc định
   setCurrentBook: (book) => {
     set({ currentBook: book });
 
@@ -27,8 +27,11 @@ const useAppStore = create<AppState>((set, get) => ({
   setCurrentChapter: (chapter) => {
     set({ currentChapter: chapter });
   },
-  chapters: null, // Giá trị mặc định
+  chapters: chapters, // Giá trị mặc định
   sentences: [], // Giá trị mặc định
+  setSentences: (sentences: string[]) => {
+    set({ sentences });
+  },
   fetchChapters: async () => {
     const currentBook = get().currentBook;
     if (!currentBook) {
@@ -50,49 +53,6 @@ const useAppStore = create<AppState>((set, get) => ({
       });
     } catch (err) {
       console.error('Lỗi khi lấy danh sách chương:', err);
-    }
-  },
-  fetchChapterContent: async () => {
-    console.log('fetch Chapter Content');
-    const currentBook = get().currentBook;
-    const currentChapter = get().currentChapter;
-
-    if (
-      !currentBook ||
-      !currentChapter ||
-      currentChapter.index < 0 ||
-      currentChapter.index > currentBook.chapter_count
-    ) {
-      return [];
-    }
-
-    try {
-      const url = `https://metruyencv.com/truyen/${currentBook.slug}/chuong-${currentChapter.index}`;
-      const response = await fetch(url);
-      const html = await response.text();
-      const match = html.match(/content:\s*"(.*?)"/);
-
-      if (match && match[1]) {
-        let encryptContent = match[1];
-        encryptContent = encryptContent.replace(/\\\//g, '/');
-        encryptContent = encryptContent.replace(/\\n/g, '\n');
-        encryptContent = encryptContent.replace(/\\t/g, '\t');
-        encryptContent = encryptContent.replace(/\\"/g, '"');
-        encryptContent = encryptContent.replace(/\\\\/g, '\\');
-
-        let content = decryptContent(encryptContent);
-        content = content.map((item: string) =>
-          item
-            .replace(/"/g, '')
-            .replace('·', '')
-            .replace(/(\d\.)\s(\d)/g, '$1$2'),
-        );
-
-        set({ sentences: content });
-        return content;
-      }
-    } catch (err) {
-      console.error('Error fetching chapter content:', err);
     }
   },
 }));
