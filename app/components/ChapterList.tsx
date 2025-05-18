@@ -48,7 +48,7 @@ const ChapterList: React.FC<ChapterListProps> = ({
               isCurrent && styles.currentChapterTitle,
             ]}
           >
-            {item.name}
+            {item.index} {item.name}
           </Text>
           <Text
             style={[styles.chapterDate, isCurrent && styles.currentChapterDate]}

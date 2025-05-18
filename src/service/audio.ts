@@ -19,7 +19,6 @@ export const speak = ({
   const rate = get('rate', StoreValueType.Number) || 1.8;
 
   if (index < sentences.length) {
-    console.log('audio speak');
     // Cập nhật chỉ số câu hiện tại
     updateSentenceIndex(index);
 
@@ -36,12 +35,7 @@ export const speak = ({
         }),
     });
   } else {
-    console.log(
-      "🚀 ~ get('currentChapter', StoreValueType.Number):",
-      get('currentChapter', StoreValueType.Number)
-    );
     const nextChapter = (get('currentChapter', StoreValueType.Number) || 0) + 1;
-    console.log('🚀 ~ nextChapter:', nextChapter);
     set('currentChapter', nextChapter);
     ChapterEvent.emit('chapterChanged', nextChapter);
   }
