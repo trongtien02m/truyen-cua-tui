@@ -16,7 +16,6 @@ const validateToken = async (token: string) => {
   });
   
   const userInfo = await response.json();
-  console.log("🚀 ~ validateToken ~ userInfo:", userInfo)
 
   if (userInfo.status !== 200) {
     return false;
@@ -26,7 +25,6 @@ const validateToken = async (token: string) => {
 };
 
 export const login = async () => {
-  console.log('login');
   try {
     const response = await fetch(
       'https://backend.metruyencv.com/api/auth/login',
@@ -45,8 +43,6 @@ export const login = async () => {
       }
     );
 
-    console.log('response', response);
-
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(
@@ -57,7 +53,6 @@ export const login = async () => {
     const data = await response.json();
 
     set('userToken', data.data.token);
-    console.log('🚀 ~ login ~ data.data.token:', data.data.token);
 
     // Ví dụ: Lưu token vào localStorage hoặc AsyncStorage
     // localStorage.setItem('token', data.token);
@@ -70,8 +65,6 @@ export const login = async () => {
 
 export const getToken = async () => {
   const token = get('userToken');
-  console.log("🚀 ~ getToken ~ token:", token)
-
   const isValidToken = await validateToken(token);
 
   if (!isValidToken) {

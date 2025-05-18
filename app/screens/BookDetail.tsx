@@ -1,5 +1,5 @@
 import { get } from '@/helpers/mmkvStoreUtils';
-import { updateMyBooks } from '@/service/account';
+import { getCurrentBook, updateMyBooks } from '@/service/account';
 import useAppStore from '@/store/store';
 import { Book } from '@/types/Book';
 import { Chapter } from '@/types/Chapter';
@@ -7,7 +7,7 @@ import { StoreValueType } from '@/types/StoreValueType';
 import ChapterList from '@app/components/ChapterList';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   FlatList,
   Image,
@@ -23,6 +23,9 @@ const BookDetail = () => {
   const setCurrentChapter = useAppStore((state) => state.setCurrentChapter);
   const setCurrentBook = useAppStore((state) => state.setCurrentBook);
 
+  useEffect(() => {
+    setCurrentBook(getCurrentBook(currentBook.id));
+  }, []);
   const onChapterSelect = (chapter: Chapter) => {
     setCurrentChapter(chapter);
     setCurrentBook({

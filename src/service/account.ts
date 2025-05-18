@@ -19,3 +19,11 @@ export const updateMyBooks = (book: Book) => {
 
   set('myBooks', myBooks);
 };
+
+export const getCurrentBook = (bookId: number) => {
+  const myBooks = get('myBooks', StoreValueType.Object);
+
+  if (!myBooks) return undefined;
+
+  return myBooks.find((b: Book) => b.id === bookId);
+};

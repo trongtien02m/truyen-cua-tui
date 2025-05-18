@@ -48,11 +48,9 @@ const VoiceSettings: React.FC<VoiceSettingsProps> = ({
 
       while (voices.length === 0 && isMounted) {
         try {
-          console.log('fetch voices');
           voices = await Speech.getAvailableVoicesAsync();
 
           if (voices.length === 0 && isMounted) {
-            console.log('TTS not ready. Waiting...');
             await new Promise((resolve) => setTimeout(resolve, 500));
           }
         } catch (error) {
@@ -62,8 +60,6 @@ const VoiceSettings: React.FC<VoiceSettingsProps> = ({
       }
 
       if (!isMounted) return;
-
-      console.log('hasVoice');
 
       setIsFetchingVoices(false);
 

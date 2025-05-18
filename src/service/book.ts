@@ -37,9 +37,7 @@ export const fetchChapterContent = async (
 ) => {
   try {
     const token = await getToken();
-    console.log('🚀 ~ token:', token);
     const url = `https://metruyencv.com/truyen/${bookSlug}/chuong-${chapter}`;
-    console.log('fetch Chapter Content', url);
     const response = await fetch(url, {
       method: 'GET',
       headers: {

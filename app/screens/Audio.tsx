@@ -87,6 +87,7 @@ const Audio = () => {
 
   const speakTask = async () => {
     if (!taskStarted) {
+      console.log('add Task');
       ChapterEvent.on('chapterChanged', chapterChangeHandler);
       ChapterEvent.on('sentenceIndexChanged', sentenceIndexChangeHandler);
       setIsListenerAdded(true);
